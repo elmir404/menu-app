@@ -1,9 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { FiClock, FiGrid, FiList } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
 import RestaurantHeader from '../components/RestaurantHeader';
 import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
+import CheckoutModal from '../components/CheckoutModal';
 
 const API_URL = import.meta.env.VITE_MENU_API_URL || '/menu.json';
 
@@ -27,6 +29,103 @@ function MenuPage() {
   const isClickScrollingRef = useRef(false);
   const scrollUpdateTimeoutRef = useRef(null);
   const [status, setStatus] = useState('loading');
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [lastAdded, setLastAdded] = useState(null); // { id, ts }
+  const lastAddedTimeoutRef = useRef(null);
+
+  const cartTotals = cartItems.reduce(
+    (acc, item) => {
+      acc.items += item.quantity || 0;
+      acc.total += item.total || 0;
+      acc.currencySign = item.currencySign || acc.currencySign;
+      return acc;
+    },
+    { items: 0, total: 0, currencySign: '₼' }
+  );
+
+  const playBeep = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(640, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.14);
+    } catch (e) {
+      // ignore audio errors (e.g., unsupported contexts)
+    }
+  };
+
+  const handleAddToCart = (item) => {
+    setCartItems((prev) => {
+      const existing = prev.find((i) => i.id === item.id);
+      if (existing) {
+        return prev.map((i) =>
+          i.id === item.id
+            ? {
+                ...i,
+                quantity: i.quantity + 1,
+                total: (i.quantity + 1) * i.price,
+              }
+            : i
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          currencySign: item.currencySign || '₼',
+          quantity: 1,
+          total: item.price,
+        },
+      ];
+    });
+    if (lastAddedTimeoutRef.current) clearTimeout(lastAddedTimeoutRef.current);
+    const ts = Date.now();
+    setLastAdded({ id: item.id, ts });
+    playBeep();
+    lastAddedTimeoutRef.current = setTimeout(() => {
+      setLastAdded(null);
+    }, 1000);
+  };
+
+  const handleIncrement = (id) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: item.quantity + 1,
+              total: (item.quantity + 1) * item.price,
+            }
+          : item
+      )
+    );
+  };
+
+  const handleDecrement = (id) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                quantity: item.quantity - 1,
+                total: (item.quantity - 1) * item.price,
+              }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
 
   useEffect(() => {
     const loadRestaurant = async () => {
@@ -118,6 +217,8 @@ function MenuPage() {
   if (status === 'error' || !restaurant) {
     return <ErrorState message='Failed to load menu.' />;
   }
+
+  const isGrid = viewMode === 'grid';
 
   return (
     <div className='min-h-screen bg-stone-50'>
@@ -218,10 +319,10 @@ function MenuPage() {
                 {category.items.map((item) => (
                   <article
                     key={item.id}
-                    className={`h-full rounded-2xl border border-stone-200 bg-white p-3 shadow-sm ${
-                      viewMode === 'grid'
+                    className={`relative h-full rounded-2xl border border-stone-200 bg-white p-3 shadow-sm ${
+                      isGrid
                         ? 'flex flex-col gap-2'
-                        : 'flex items-center gap-3'
+                        : 'flex items-center gap-3 pr-24'
                     }`}
                   >
                     <img
@@ -235,46 +336,81 @@ function MenuPage() {
                     />
                     <div
                       className={
-                        viewMode === 'grid'
+                        isGrid
                           ? 'flex min-h-0 flex-1 flex-col'
                           : 'flex-1'
                       }
                     >
                       <div
                         className={`flex items-start ${
-                          viewMode === 'grid'
+                          isGrid
                             ? 'justify-between gap-2'
                             : 'items-center justify-between gap-2'
                         }`}
                       >
                         <h3
                           className={`text-sm font-semibold text-stone-900 ${
-                            viewMode === 'grid' ? 'line-clamp-1 min-h-[20px]' : ''
+                            isGrid ? 'line-clamp-1 min-h-[20px]' : ''
                           }`}
                         >
                           {item.name}
                         </h3>
-                        <span className='text-sm font-semibold text-stone-900'>
-                          {item.currencySign}
-                          {item.price}
-                        </span>
+                        {isGrid && (
+                          <span className='text-sm font-semibold text-stone-900'>
+                            {item.currencySign}
+                            {item.price}
+                          </span>
+                        )}
                       </div>
                       <p
                         className={`mt-1 text-xs text-stone-600 ${
-                          viewMode === 'grid' ? 'line-clamp-2 min-h-[34px]' : ''
+                          isGrid ? 'line-clamp-2 min-h-[34px]' : ''
                         }`}
                       >
                         {item.description}
                       </p>
                       <p
                         className={`mt-1 flex items-center gap-1 text-[11px] text-stone-500 ${
-                          viewMode === 'grid' ? 'mt-auto pt-2' : ''
+                          isGrid ? 'mt-auto pt-2' : ''
                         }`}
                       >
                         <FiClock className='text-[11px]' aria-hidden='true' />
                         Prep {item.prepTimeMinutes} min
                       </p>
                     </div>
+                    {isGrid ? (
+                      <button
+                        type='button'
+                        onClick={() => handleAddToCart(item)}
+                        className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition hover:scale-105 ${
+                          lastAdded?.id === item.id
+                            ? 'bg-emerald-600'
+                            : 'bg-stone-900'
+                        }`}
+                        aria-label='Add to cart'
+                      >
+                        <FiPlus className='text-base' />
+                      </button>
+                    ) : (
+                      <div className='absolute inset-y-3 right-3 flex flex-col items-end justify-between gap-2'>
+                        <span className='text-sm font-semibold text-stone-900'>
+                          {item.currencySign}
+                          {item.price}
+                        </span>
+                        <button
+                          type='button'
+                          onClick={() => handleAddToCart(item)}
+                          className={`flex h-9 w-9 items-center justify-center rounded-full text-white shadow-sm transition hover:scale-105 ${
+                            lastAdded?.id === item.id
+                              ? 'bg-emerald-600'
+                              : 'bg-stone-900'
+                          }`}
+                          aria-label='Add to cart'
+                        >
+                          <FiPlus className='text-base' />
+                        </button>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
@@ -282,6 +418,37 @@ function MenuPage() {
           ))}
         </div>
       </div>
+
+      {/* Floating cart summary */}
+      {cartTotals.items > 0 && (
+        <div className='pointer-events-none fixed inset-x-0 bottom-3 z-20 flex justify-center px-4'>
+          <button
+            type='button'
+            className='pointer-events-auto flex w-full max-w-md items-center justify-between rounded-full bg-stone-900/90 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur'
+            onClick={() => setIsCheckoutOpen(true)}
+          >
+            <span className='flex items-center gap-2'>
+              <span className='inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-xs font-semibold'>
+                {cartTotals.items}
+              </span>
+              <span>View order</span>
+            </span>
+            <span className='text-sm'>
+              {cartTotals.currencySign}
+              {cartTotals.total.toFixed(2)}
+            </span>
+          </button>
+        </div>
+      )}
+
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        items={cartItems}
+        total={cartTotals.total}
+        onIncrement={handleIncrement}
+        onDecrement={handleDecrement}
+      />
     </div>
   );
 }
