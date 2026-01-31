@@ -1,0 +1,1079 @@
+{
+  "restaurant": {
+    "image": "https://pubzade.az/assets/WhatsApp%20Image%202025-11-15%20at%202.35.26%20PM_1763213773360-DWlXZxdi.jpeg",
+    "rating": 4.7,
+    "name": "Pubzade",
+    "address": "45 Nizami St, Baku",
+    "workingDays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "workingHours": "11:00 - 23:00",
+    "phone": "+994552993888",
+    "wifi": {
+      "password": "pubzade2026",
+      "ssid": "PubzadeGuest"
+    },
+    "googleLocation": "https://maps.app.goo.gl/AfgjiPnJDzs2gcSr8",
+    "wazeLocation": "https://waze.com/ul/htp5mtwcxy",
+    "categories": [
+      {
+        "name": "Starters",
+        "id": "starters",
+        "items": [
+          {
+            "id": "st-1",
+            "currencySign": "₼",
+            "name": "Badimcan Salati",
+            "price": 6,
+            "description": "Grilled eggplant, tomato, garlic, herbs",
+            "prepTimeMinutes": 8,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-2",
+            "currencySign": "₼",
+            "name": "Pomidor Xiyar Salati",
+            "price": 7,
+            "description": "Tomato, cucumber, onion, sumac",
+            "prepTimeMinutes": 9,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-3",
+            "currencySign": "₼",
+            "name": "Qovurma Qutab",
+            "price": 8,
+            "description": "Thin flatbread, beef filling, herbs",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-4",
+            "currencySign": "₼",
+            "name": "Jiz-Biz Bites",
+            "price": 9,
+            "description": "Seared lamb, onion, lemon",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-5",
+            "currencySign": "₼",
+            "name": "Motal Pendir Plate",
+            "price": 10,
+            "description": "Sheep cheese, greens, lavash",
+            "prepTimeMinutes": 12,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-6",
+            "currencySign": "₼",
+            "name": "Sogan Soganasi",
+            "price": 11,
+            "description": "Caramelized onions, walnut, pomegranate",
+            "prepTimeMinutes": 13,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-7",
+            "currencySign": "₼",
+            "name": "Su Smoked Fish",
+            "price": 6,
+            "description": "Lightly smoked fish, lemon, dill",
+            "prepTimeMinutes": 8,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-8",
+            "currencySign": "₼",
+            "name": "Choban Mezze",
+            "price": 7,
+            "description": "Seasonal vegetables, herbs, olive oil",
+            "prepTimeMinutes": 9,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-9",
+            "currencySign": "₼",
+            "name": "Dovga Cup",
+            "price": 8,
+            "description": "Yogurt, herbs, chickpeas",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "st-10",
+            "currencySign": "₼",
+            "name": "Tandir Bread",
+            "price": 9,
+            "description": "Warm tandir bread, butter",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Mains",
+        "id": "mains",
+        "items": [
+          {
+            "id": "mn-1",
+            "currencySign": "₼",
+            "name": "Shah Plov",
+            "price": 14,
+            "description": "Saffron rice, lamb, dried fruit",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-2",
+            "currencySign": "₼",
+            "name": "Sadj Plov",
+            "price": 15,
+            "description": "Rice, lamb, vegetables, spices",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-3",
+            "currencySign": "₼",
+            "name": "Piti",
+            "price": 16,
+            "description": "Lamb, chickpea, chestnut stew",
+            "prepTimeMinutes": 22,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-4",
+            "currencySign": "₼",
+            "name": "Lavangi Chicken",
+            "price": 17,
+            "description": "Chicken, walnut, onion, herbs",
+            "prepTimeMinutes": 23,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-5",
+            "currencySign": "₼",
+            "name": "Lavangi Fish",
+            "price": 18,
+            "description": "Fish, walnut, onion, pomegranate",
+            "prepTimeMinutes": 24,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-6",
+            "currencySign": "₼",
+            "name": "Dolma Mix",
+            "price": 19,
+            "description": "Grape leaves, beef, rice, herbs",
+            "prepTimeMinutes": 25,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-7",
+            "currencySign": "₼",
+            "name": "Buglama",
+            "price": 14,
+            "description": "Fish, tomato, onion, herbs",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-8",
+            "currencySign": "₼",
+            "name": "Kufta Bozbash",
+            "price": 15,
+            "description": "Lamb meatball, potato, herbs",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-9",
+            "currencySign": "₼",
+            "name": "Kabab Platter",
+            "price": 16,
+            "description": "Assorted kebabs, lavash, greens",
+            "prepTimeMinutes": 22,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "mn-10",
+            "currencySign": "₼",
+            "name": "Dushbara",
+            "price": 17,
+            "description": "Tiny dumplings, broth, mint",
+            "prepTimeMinutes": 23,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Soups",
+        "id": "soups",
+        "items": [
+          {
+            "id": "sp-1",
+            "currencySign": "₼",
+            "name": "Dovga",
+            "price": 5,
+            "description": "Yogurt, herbs, chickpeas",
+            "prepTimeMinutes": 12,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-2",
+            "currencySign": "₼",
+            "name": "Piti Soup",
+            "price": 6,
+            "description": "Lamb, chickpea, chestnut broth",
+            "prepTimeMinutes": 13,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-3",
+            "currencySign": "₼",
+            "name": "Tomato Herb Soup",
+            "price": 7,
+            "description": "Tomato, basil, garlic",
+            "prepTimeMinutes": 14,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-4",
+            "currencySign": "₼",
+            "name": "Khash",
+            "price": 8,
+            "description": "Rich bone broth, garlic",
+            "prepTimeMinutes": 15,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-5",
+            "currencySign": "₼",
+            "name": "Kufta Bozbash",
+            "price": 9,
+            "description": "Meatball, potato, saffron",
+            "prepTimeMinutes": 16,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-6",
+            "currencySign": "₼",
+            "name": "Lentil Soup",
+            "price": 10,
+            "description": "Red lentils, cumin, lemon",
+            "prepTimeMinutes": 17,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-7",
+            "currencySign": "₼",
+            "name": "Mushroom Soup",
+            "price": 5,
+            "description": "Wild mushroom, cream",
+            "prepTimeMinutes": 12,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-8",
+            "currencySign": "₼",
+            "name": "Chicken Soup",
+            "price": 6,
+            "description": "Chicken, noodles, herbs",
+            "prepTimeMinutes": 13,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-9",
+            "currencySign": "₼",
+            "name": "Fish Soup",
+            "price": 7,
+            "description": "Fish, tomato, herbs",
+            "prepTimeMinutes": 14,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sp-10",
+            "currencySign": "₼",
+            "name": "Vegetable Soup",
+            "price": 8,
+            "description": "Seasonal vegetables, herbs",
+            "prepTimeMinutes": 15,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Salads",
+        "id": "salads",
+        "items": [
+          {
+            "id": "sa-1",
+            "currencySign": "₼",
+            "name": "Choban Salati",
+            "price": 7,
+            "description": "Tomato, cucumber, onion, herbs",
+            "prepTimeMinutes": 8,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-2",
+            "currencySign": "₼",
+            "name": "Mangal Salati",
+            "price": 8,
+            "description": "Roasted eggplant, pepper, tomato",
+            "prepTimeMinutes": 9,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-3",
+            "currencySign": "₼",
+            "name": "Cabbage Salati",
+            "price": 9,
+            "description": "Cabbage, carrot, vinegar",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-4",
+            "currencySign": "₼",
+            "name": "Carrot Walnut Salati",
+            "price": 10,
+            "description": "Carrot, walnut, garlic",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-5",
+            "currencySign": "₼",
+            "name": "Beet Walnut Salati",
+            "price": 11,
+            "description": "Beetroot, walnut, garlic",
+            "prepTimeMinutes": 12,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-6",
+            "currencySign": "₼",
+            "name": "Pickle Plate",
+            "price": 12,
+            "description": "Assorted pickles, herbs",
+            "prepTimeMinutes": 13,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-7",
+            "currencySign": "₼",
+            "name": "Greens Plate",
+            "price": 7,
+            "description": "Fresh herbs, radish, scallion",
+            "prepTimeMinutes": 8,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-8",
+            "currencySign": "₼",
+            "name": "Pomegranate Salad",
+            "price": 8,
+            "description": "Mixed greens, pomegranate, onion",
+            "prepTimeMinutes": 9,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-9",
+            "currencySign": "₼",
+            "name": "Potato Salati",
+            "price": 9,
+            "description": "Boiled potato, dill, onion",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sa-10",
+            "currencySign": "₼",
+            "name": "Eggplant Salad",
+            "price": 10,
+            "description": "Eggplant, tomato, garlic",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Kebabs \u0026 Grill",
+        "id": "grill",
+        "items": [
+          {
+            "id": "gr-1",
+            "currencySign": "₼",
+            "name": "Tike Kabab",
+            "price": 12,
+            "description": "Lamb skewers, sumac onion",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-2",
+            "currencySign": "₼",
+            "name": "Lula Kabab",
+            "price": 13,
+            "description": "Minced lamb, spices, lavash",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-3",
+            "currencySign": "₼",
+            "name": "Chicken Kabab",
+            "price": 14,
+            "description": "Chicken thigh, yogurt marinade",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-4",
+            "currencySign": "₼",
+            "name": "Basdirma",
+            "price": 15,
+            "description": "Marinated beef, grilled",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-5",
+            "currencySign": "₼",
+            "name": "Kabab from Fish",
+            "price": 16,
+            "description": "Fish skewers, lemon",
+            "prepTimeMinutes": 22,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-6",
+            "currencySign": "₼",
+            "name": "Veg Kabab",
+            "price": 17,
+            "description": "Grilled vegetables, herbs",
+            "prepTimeMinutes": 23,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-7",
+            "currencySign": "₼",
+            "name": "Quzu Qabirga",
+            "price": 12,
+            "description": "Lamb ribs, spice rub",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-8",
+            "currencySign": "₼",
+            "name": "Turshu Kabab",
+            "price": 13,
+            "description": "Lamb, sour plum, tomato",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-9",
+            "currencySign": "₼",
+            "name": "Kartof Kabab",
+            "price": 14,
+            "description": "Grilled potato, herbs",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "gr-10",
+            "currencySign": "₼",
+            "name": "Mushroom Kabab",
+            "price": 15,
+            "description": "Grilled mushrooms, garlic",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Rice \u0026 Plov",
+        "id": "rice",
+        "items": [
+          {
+            "id": "rc-1",
+            "currencySign": "₼",
+            "name": "Saffron Plov",
+            "price": 10,
+            "description": "Saffron rice, butter",
+            "prepTimeMinutes": 16,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-2",
+            "currencySign": "₼",
+            "name": "Shirin Plov",
+            "price": 11,
+            "description": "Rice, dried fruit, nuts",
+            "prepTimeMinutes": 17,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-3",
+            "currencySign": "₼",
+            "name": "Sabzi Plov",
+            "price": 12,
+            "description": "Rice, herbs, lamb",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-4",
+            "currencySign": "₼",
+            "name": "Toyuq Plov",
+            "price": 13,
+            "description": "Rice, chicken, spices",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-5",
+            "currencySign": "₼",
+            "name": "Fisinjan Plov",
+            "price": 14,
+            "description": "Rice, walnut, pomegranate",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-6",
+            "currencySign": "₼",
+            "name": "Qara Plov",
+            "price": 15,
+            "description": "Rice, lamb, quince",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-7",
+            "currencySign": "₼",
+            "name": "Balig Plov",
+            "price": 10,
+            "description": "Rice, fish, herbs",
+            "prepTimeMinutes": 16,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-8",
+            "currencySign": "₼",
+            "name": "Kishmish Plov",
+            "price": 11,
+            "description": "Rice, raisins, saffron",
+            "prepTimeMinutes": 17,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-9",
+            "currencySign": "₼",
+            "name": "Kestane Plov",
+            "price": 12,
+            "description": "Rice, chestnut, lamb",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "rc-10",
+            "currencySign": "₼",
+            "name": "Noxud Plov",
+            "price": 13,
+            "description": "Rice, chickpeas, lamb",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Homestyle Dishes",
+        "id": "pasta",
+        "items": [
+          {
+            "id": "pa-1",
+            "currencySign": "₼",
+            "name": "Xengel",
+            "price": 9,
+            "description": "Dough pieces, yogurt, garlic",
+            "prepTimeMinutes": 14,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-2",
+            "currencySign": "₼",
+            "name": "Gurzə",
+            "price": 10,
+            "description": "Dumplings, herbs, broth",
+            "prepTimeMinutes": 15,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-3",
+            "currencySign": "₼",
+            "name": "Khingal",
+            "price": 11,
+            "description": "Dough, meat, onion",
+            "prepTimeMinutes": 16,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-4",
+            "currencySign": "₼",
+            "name": "Sutlu Ash",
+            "price": 12,
+            "description": "Milk soup, noodles",
+            "prepTimeMinutes": 17,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-5",
+            "currencySign": "₼",
+            "name": "Təndir Qutab",
+            "price": 13,
+            "description": "Herb qutab, sumac",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-6",
+            "currencySign": "₼",
+            "name": "Syrniki",
+            "price": 14,
+            "description": "Cottage cheese cakes",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-7",
+            "currencySign": "₼",
+            "name": "Kete",
+            "price": 9,
+            "description": "Pastry, butter, sugar",
+            "prepTimeMinutes": 14,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-8",
+            "currencySign": "₼",
+            "name": "Qovurma",
+            "price": 10,
+            "description": "Lamb stew, onion",
+            "prepTimeMinutes": 15,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-9",
+            "currencySign": "₼",
+            "name": "Sulu Qovurma",
+            "price": 11,
+            "description": "Lamb, potato, tomato",
+            "prepTimeMinutes": 16,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "pa-10",
+            "currencySign": "₼",
+            "name": "Buglama Veg",
+            "price": 12,
+            "description": "Vegetable stew, herbs",
+            "prepTimeMinutes": 17,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Wraps \u0026 Qutab",
+        "id": "sandwiches",
+        "items": [
+          {
+            "id": "sw-1",
+            "currencySign": "₼",
+            "name": "Greens Qutab",
+            "price": 7,
+            "description": "Herb filling, sumac",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-2",
+            "currencySign": "₼",
+            "name": "Cheese Qutab",
+            "price": 8,
+            "description": "Cheese, greens, lavash",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-3",
+            "currencySign": "₼",
+            "name": "Pumpkin Qutab",
+            "price": 9,
+            "description": "Pumpkin, onion, spices",
+            "prepTimeMinutes": 12,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-4",
+            "currencySign": "₼",
+            "name": "Meat Qutab",
+            "price": 10,
+            "description": "Minced meat, onion",
+            "prepTimeMinutes": 13,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-5",
+            "currencySign": "₼",
+            "name": "Shawarma Wrap",
+            "price": 11,
+            "description": "Chicken, garlic sauce, pickles",
+            "prepTimeMinutes": 14,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-6",
+            "currencySign": "₼",
+            "name": "Doner Wrap",
+            "price": 12,
+            "description": "Beef, onion, tomato",
+            "prepTimeMinutes": 15,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-7",
+            "currencySign": "₼",
+            "name": "Lavash Roll",
+            "price": 7,
+            "description": "Cheese, herbs, lettuce",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-8",
+            "currencySign": "₼",
+            "name": "Sujuk Roll",
+            "price": 8,
+            "description": "Sujuk, cheese, herbs",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-9",
+            "currencySign": "₼",
+            "name": "Lamb Wrap",
+            "price": 9,
+            "description": "Grilled lamb, herbs",
+            "prepTimeMinutes": 12,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sw-10",
+            "currencySign": "₼",
+            "name": "Veg Wrap",
+            "price": 10,
+            "description": "Roasted vegetables, herbs",
+            "prepTimeMinutes": 13,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Seafood",
+        "id": "seafood",
+        "items": [
+          {
+            "id": "sf-1",
+            "currencySign": "₼",
+            "name": "Caspian Kutum",
+            "price": 16,
+            "description": "Pan-seared kutum, lemon",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-2",
+            "currencySign": "₼",
+            "name": "Sturgeon Steak",
+            "price": 17,
+            "description": "Sturgeon, herb butter",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-3",
+            "currencySign": "₼",
+            "name": "Lavangi Fish",
+            "price": 18,
+            "description": "Walnut, onion, pomegranate",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-4",
+            "currencySign": "₼",
+            "name": "Fish Buglama",
+            "price": 19,
+            "description": "Fish, tomato, herbs",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-5",
+            "currencySign": "₼",
+            "name": "Grilled Trout",
+            "price": 20,
+            "description": "Trout, lemon, dill",
+            "prepTimeMinutes": 22,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-6",
+            "currencySign": "₼",
+            "name": "Sea Bass",
+            "price": 21,
+            "description": "Sea bass, saffron sauce",
+            "prepTimeMinutes": 23,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-7",
+            "currencySign": "₼",
+            "name": "Shrimp Saute",
+            "price": 16,
+            "description": "Shrimp, garlic, herbs",
+            "prepTimeMinutes": 18,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-8",
+            "currencySign": "₼",
+            "name": "Calamari",
+            "price": 17,
+            "description": "Crispy calamari, lemon",
+            "prepTimeMinutes": 19,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-9",
+            "currencySign": "₼",
+            "name": "Mussels",
+            "price": 18,
+            "description": "Mussels, tomato, garlic",
+            "prepTimeMinutes": 20,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "sf-10",
+            "currencySign": "₼",
+            "name": "Fish Soup Bowl",
+            "price": 19,
+            "description": "Fish broth, herbs",
+            "prepTimeMinutes": 21,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      },
+      {
+        "name": "Desserts",
+        "id": "desserts",
+        "items": [
+          {
+            "id": "ds-1",
+            "currencySign": "₼",
+            "name": "Pakhlava",
+            "price": 4,
+            "description": "Layered pastry, walnut, honey",
+            "prepTimeMinutes": 6,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-2",
+            "currencySign": "₼",
+            "name": "Shekerbura",
+            "price": 5,
+            "description": "Sweet pastry, nut filling",
+            "prepTimeMinutes": 7,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-3",
+            "currencySign": "₼",
+            "name": "Badambura",
+            "price": 6,
+            "description": "Almond pastry, cardamom",
+            "prepTimeMinutes": 8,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-4",
+            "currencySign": "₼",
+            "name": "Qogal",
+            "price": 7,
+            "description": "Spiced pastry, flaky",
+            "prepTimeMinutes": 9,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-5",
+            "currencySign": "₼",
+            "name": "Goghal",
+            "price": 8,
+            "description": "Anise pastry, soft",
+            "prepTimeMinutes": 10,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-6",
+            "currencySign": "₼",
+            "name": "Halva",
+            "price": 9,
+            "description": "Sesame halva, nuts",
+            "prepTimeMinutes": 11,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-7",
+            "currencySign": "₼",
+            "name": "Shemakha Halva",
+            "price": 4,
+            "description": "Sweet halva, saffron",
+            "prepTimeMinutes": 6,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-8",
+            "currencySign": "₼",
+            "name": "Pahlava Roll",
+            "price": 5,
+            "description": "Honey syrup, pistachio",
+            "prepTimeMinutes": 7,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-9",
+            "currencySign": "₼",
+            "name": "Gatalama",
+            "price": 6,
+            "description": "Soft cake, butter",
+            "prepTimeMinutes": 8,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          },
+          {
+            "id": "ds-10",
+            "currencySign": "₼",
+            "name": "Rice Pudding",
+            "price": 7,
+            "description": "Sutlac, cinnamon",
+            "prepTimeMinutes": 9,
+            "currency": "AZN",
+            "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
+          }
+        ]
+      }
+    ]
+  }
+}
