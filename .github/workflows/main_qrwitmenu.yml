@@ -31,27 +31,50 @@ jobs:
           rm -rf deploy
           mkdir -p deploy
 
-          # Copy standalone server output to deploy root (includes server.js + minimal node_modules)
+          # 1) Standalone server output (server.js + minimal node_modules)
           cp -R .next/standalone/* deploy/
 
-          # Copy static assets
+          # 2) Copy static assets
           mkdir -p deploy/.next
           cp -R .next/static deploy/.next/static
 
-          # Copy public folder
+          # 3) Copy BUILD_ID (CRITICAL)
+          if [ -f .next/BUILD_ID ]; then
+            cp .next/BUILD_ID deploy/.next/BUILD_ID
+          else
+            echo "ERROR: .next/BUILD_ID not found. Build did not produce a production build."
+            ls -la .next || true
+            exit 1
+          fi
+
+          # 4) Optional but helpful: required server files manifest
+          if [ -f .next/required-server-files.json ]; then
+            cp .next/required-server-files.json deploy/.next/required-server-files.json
+          fi
+
+          # 5) Public assets
           cp -R public deploy/public
 
-          echo "Deploy root listing:"
+          echo "=== DEPLOY ROOT ==="
           ls -la deploy
+          echo "=== DEPLOY .next ==="
+          ls -la deploy/.next
 
-          # Safety check: server.js must exist
+          # Safety checks
           test -f deploy/server.js
+          test -f deploy/.next/BUILD_ID
+
+      - name: Zip deploy package
+        run: |
+          cd deploy
+          zip -r ../app.zip .
+          cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: deploy-package
-          path: deploy
+          path: app.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -65,7 +88,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: deploy-package
-          path: deploy
+          path: .
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -79,4 +102,4 @@ jobs:
         with:
           app-name: "qrwitmenu"
           slot-name: "Production"
-          package: deploy
+          package: app.zip
