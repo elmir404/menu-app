@@ -9,6 +9,7 @@ const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 // .env.local faylında NODE_TLS_REJECT_UNAUTHORIZED=0 əlavə edin (yalnız development üçün)
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true, // Custom domain (qrwithmenu.com) üçün UntrustedHost xətasını həll edir
   providers: [
     Credentials({
       name: "Credentials",
