@@ -26,32 +26,45 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Prepare deploy package (standalone)
+      - name: Prepare deploy package (standalone + full .next manifests)
         run: |
           rm -rf deploy
           mkdir -p deploy
 
-          # Copy standalone server output to deploy root (includes server.js + minimal node_modules)
+          # 1) Standalone server output (server.js + minimal node_modules)
           cp -R .next/standalone/* deploy/
 
-          # Copy static assets
+          # 2) Copy full .next folder EXCEPT cache (includes routes-manifest.json, build-manifest.json, prerender-manifest.json, etc.)
           mkdir -p deploy/.next
-          cp -R .next/static deploy/.next/static
+          rsync -a --delete \
+            --exclude "cache" \
+            .next/ deploy/.next/
 
-          # Copy public folder
+          # 3) Public assets
           cp -R public deploy/public
 
-          echo "Deploy root listing:"
-          ls -la deploy
+          echo "=== DEPLOY ROOT ==="
+          ls -la deploy | head -n 200
 
-          # Safety check: server.js must exist
+          echo "=== DEPLOY .next (top) ==="
+          ls -la deploy/.next | head -n 200
+
+          # Safety checks (must exist)
           test -f deploy/server.js
+          test -f deploy/.next/BUILD_ID
+          test -f deploy/.next/routes-manifest.json
+
+      - name: Zip deploy package
+        run: |
+          cd deploy
+          zip -r ../app.zip .
+          cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: deploy-package
-          path: deploy
+          path: app.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -65,7 +78,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: deploy-package
-          path: deploy
+          path: .
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -79,4 +92,4 @@ jobs:
         with:
           app-name: "qrwitmenu"
           slot-name: "Production"
-          package: deploy
+          package: app.zip
