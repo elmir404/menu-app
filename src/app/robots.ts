@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 
+export const dynamic = "force-static";
+// (opsional) export const revalidate = 86400;
+
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://walvero.com";
+  const baseUrl = "https://www.qrwithmenu.com"; // ✅ static export üçün sabit saxla
 
   return {
     rules: [
@@ -14,3 +17,4 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
+
