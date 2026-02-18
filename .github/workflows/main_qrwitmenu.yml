@@ -25,6 +25,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_MEDIA_URL: ${{ secrets.NEXT_PUBLIC_MEDIA_URL }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
 
       - name: Prepare deploy package (standalone + full .next manifests)
         run: |
