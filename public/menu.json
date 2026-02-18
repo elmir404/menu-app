@@ -25,7 +25,7 @@
             "price": 6,
             "description": "Grilled eggplant, tomato, garlic, herbs",
             "prepTimeMinutes": 8,
-            "currency": "AZN",
+            "currency": "AZN",  
             "image": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format\u0026fit=crop\u0026w=1200\u0026q=80"
           },
           {
