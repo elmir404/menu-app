@@ -6,7 +6,7 @@ import { MdOutlineMenuBook } from "react-icons/md";
 import { FiCopy, FiMapPin, FiPhone, FiMail } from "react-icons/fi";
 import { FaGoogle, FaInstagram, FaFacebook, FaWhatsapp, FaTelegram, FaLinkedin } from "react-icons/fa";
 import { SiWaze } from "react-icons/si";
-import RatingModal from "@/components/RatingModal";
+// import RatingModal from "@/components/RatingModal";
 import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
@@ -28,7 +28,7 @@ export default function RestaurantPageClient({
   const tenantConfig = useTenant();
   const [restaurant, setRestaurant] = useState<RestaurantPublic | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [isRatingOpen, setIsRatingOpen] = useState(false);
+  // const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
@@ -96,30 +96,30 @@ export default function RestaurantPageClient({
   ].filter((s) => s.url);
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-stone-50 px-4 pb-8 pt-4 sm:px-5 sm:pt-5">
       <RestaurantHeader
         image={headerImage || ""}
         name={tenantConfig.name}
         rating={0}
       />
 
-      <div className="mt-4 flex items-center gap-3">
-        <button
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+        {/* <button
           type="button"
           className="flex items-center justify-center rounded-full border border-stone-200 bg-white px-4 py-2 text-xs font-medium text-stone-800"
           onClick={() => setIsRatingOpen(true)}
         >
           {dict.restaurant.rateUs}
-        </button>
+        </button> */}
         <Link
           href={`/${locale}/${tenantSlug}/menu`}
-          className="cta-ripple flex flex-1 items-center justify-between rounded-full bg-stone-900 px-5 py-2 text-sm font-medium text-white"
+          className="cta-ripple flex flex-1 items-center justify-between gap-3 rounded-full bg-stone-900 px-4 py-3 text-sm font-medium text-white sm:px-5 sm:py-2.5"
         >
           <span className="flex items-center gap-2">
-            <MdOutlineMenuBook className="text-base" aria-hidden="true" />
+            <MdOutlineMenuBook className="text-lg shrink-0 sm:text-base" aria-hidden="true" />
             <span>{dict.nav.menu}</span>
           </span>
-          <span className="text-xs font-normal text-white/70">
+          <span className="hidden text-xs font-normal text-white/70 sm:inline">
             {dict.restaurant.tryOurFlavors}
           </span>
         </Link>
@@ -127,7 +127,7 @@ export default function RestaurantPageClient({
 
       {/* WiFi Information */}
       {wifiList.length > 0 && (
-        <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
           <h2 className="text-sm font-semibold text-stone-800">
             {dict.restaurant.wifi}
           </h2>
@@ -169,7 +169,7 @@ export default function RestaurantPageClient({
       )}
 
       {/* Contact Information */}
-      <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+      <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
         <h2 className="text-sm font-semibold text-stone-800">
           {dict.restaurant.contact}
         </h2>
@@ -195,12 +195,12 @@ export default function RestaurantPageClient({
 
       {/* Location */}
       {(restaurant?.locationUrl || restaurant?.wazeLocationUrl) && (
-        <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
           <h2 className="text-sm font-semibold text-stone-800">
             {dict.restaurant.location}
           </h2>
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-stone-900">
+          <div className="mt-3 flex flex-col gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-stone-900">
               <FiMapPin className="text-sm text-stone-600" aria-hidden="true" />
               <span>
                 {restaurant?.location
@@ -238,7 +238,7 @@ export default function RestaurantPageClient({
 
       {/* Social Media */}
       {socialLinks.length > 0 && (
-        <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
           <h2 className="text-sm font-semibold text-stone-800">
             Social Media
           </h2>
@@ -262,10 +262,10 @@ export default function RestaurantPageClient({
         </section>
       )}
 
-      <RatingModal
+      {/* <RatingModal
         isOpen={isRatingOpen}
         onClose={() => setIsRatingOpen(false)}
-      />
+      /> */}
     </div>
   );
 }
