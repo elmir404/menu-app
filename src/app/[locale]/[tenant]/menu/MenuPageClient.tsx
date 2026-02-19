@@ -2,11 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiClock, FiGrid, FiList, FiPlus } from "react-icons/fi";
+import { FiClock, FiGrid, FiList, FiMinus, FiPlus } from "react-icons/fi";
 import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import CheckoutModal from "@/components/CheckoutModal";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useDictionary } from "@/components/providers/LocaleProvider";
 import { useLocale } from "@/components/providers/LocaleProvider";
 import { useTenant } from "@/components/providers/TenantProvider";
@@ -86,6 +92,8 @@ export default function MenuPageClient({
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastAdded, setLastAdded] = useState<{ id: number; ts: number } | null>(null);
   const lastAddedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PublicMenuItem | null>(null);
+  const [modalQuantity, setModalQuantity] = useState(1);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -119,14 +127,14 @@ export default function MenuPageClient({
     }
   };
 
-  const handleAddToCart = (item: PublicMenuItem) => {
+  const handleAddToCart = (item: PublicMenuItem, quantity: number = 1) => {
     const name = getLocalizedName(item, currentLocale);
     setCartItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
         return prev.map((i) =>
           i.id === item.id
-            ? { ...i, quantity: i.quantity + 1, total: (i.quantity + 1) * i.price }
+            ? { ...i, quantity: i.quantity + quantity, total: (i.quantity + quantity) * i.price }
             : i
         );
       }
@@ -137,8 +145,8 @@ export default function MenuPageClient({
           name,
           price: item.discountPrice > 0 ? item.discountPrice : item.price,
           currencySign: item.currencySign || "\u20BC",
-          quantity: 1,
-          total: item.discountPrice > 0 ? item.discountPrice : item.price,
+          quantity,
+          total: (item.discountPrice > 0 ? item.discountPrice : item.price) * quantity,
         },
       ];
     });
@@ -352,7 +360,8 @@ export default function MenuPageClient({
                   return (
                     <article
                       key={item.id}
-                      className={`relative h-full rounded-2xl border border-stone-200 bg-white p-3 shadow-sm ${
+                      onClick={() => setSelectedItem(item)}
+                      className={`relative h-full cursor-pointer rounded-2xl border border-stone-200 bg-white p-3 shadow-sm transition hover:shadow-md ${
                         isGrid
                           ? "flex flex-col gap-2"
                           : "flex items-center gap-3 pr-24"
@@ -417,7 +426,10 @@ export default function MenuPageClient({
                       {isGrid ? (
                         <button
                           type="button"
-                          onClick={() => handleAddToCart(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(item);
+                          }}
                           className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition hover:scale-105 ${
                             lastAdded?.id === item.id ? "bg-emerald-600" : "bg-stone-900"
                           }`}
@@ -437,7 +449,10 @@ export default function MenuPageClient({
                           </span>
                           <button
                             type="button"
-                            onClick={() => handleAddToCart(item)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCart(item);
+                            }}
                             className={`flex h-9 w-9 items-center justify-center rounded-full text-white shadow-sm transition hover:scale-105 ${
                               lastAdded?.id === item.id ? "bg-emerald-600" : "bg-stone-900"
                             }`}
@@ -485,6 +500,156 @@ export default function MenuPageClient({
         onIncrement={handleIncrement}
         onDecrement={handleDecrement}
       />
+
+      {/* Menu Item Detail Bottom Sheet */}
+      <Sheet 
+        open={selectedItem !== null} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedItem(null);
+            setModalQuantity(1); // Reset quantity when closing
+          }
+        }}
+      >
+        <SheetContent 
+          side="bottom" 
+          className="max-h-[90vh] overflow-y-auto p-0 rounded-t-3xl"
+          showCloseButton={true}
+        >
+          {selectedItem && (
+            <>
+              {/* Şəkil */}
+              {selectedItem.imageUrls?.[0] && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={selectedItem.imageUrls[0]}
+                  alt={getLocalizedName(selectedItem, currentLocale)}
+                  className="h-[300px] w-full object-cover sm:h-[400px]"
+                />
+              )}
+              
+              {/* Məzmun */}
+              <SheetHeader className="px-6 pt-4">
+                <SheetTitle className="text-xl font-bold text-stone-900">
+                  {getLocalizedName(selectedItem, currentLocale)}
+                </SheetTitle>
+                {getLocalizedDescription(selectedItem, currentLocale) && (
+                  <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                    {getLocalizedDescription(selectedItem, currentLocale)}
+                  </p>
+                )}
+              </SheetHeader>
+
+              {/* Qiymət və müddət */}
+              <div className="px-6 pb-6">
+                <div className="flex items-center justify-between rounded-lg bg-stone-50 p-4">
+                  <div className="flex items-center gap-2 text-sm text-stone-500">
+                    <FiClock className="text-sm" />
+                    <span>
+                      {dict.menu.prep} {selectedItem.prepTimeMinutes} {dict.menu.min}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    {selectedItem.discountPrice > 0 && (
+                      <p className="text-xs text-stone-400 line-through">
+                        {selectedItem.currencySign}{selectedItem.price}
+                      </p>
+                    )}
+                    <p className="text-lg font-bold text-stone-900">
+                      {selectedItem.currencySign}
+                      {selectedItem.discountPrice > 0
+                        ? selectedItem.discountPrice
+                        : selectedItem.price}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Miqdar və əlavə et */}
+                {(() => {
+                  const cartItem = cartItems.find((ci) => ci.id === selectedItem.id);
+                  const quantity = cartItem?.quantity || 0;
+
+                  if (quantity > 0) {
+                    // Artıq səbətdədir - miqdar artırma/azaltma
+                    return (
+                      <div className="mt-4 flex items-center gap-3">
+                        <div className="flex flex-1 items-center justify-between rounded-full border border-stone-200 bg-white px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDecrement(String(selectedItem.id))}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 text-stone-700 transition hover:bg-stone-50"
+                            aria-label={dict.menu.decrease}
+                          >
+                            <FiMinus className="text-sm" />
+                          </button>
+                          <span className="min-w-[40px] text-center text-base font-semibold text-stone-900">
+                            {quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleIncrement(String(selectedItem.id))}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 text-stone-700 transition hover:bg-stone-50"
+                            aria-label={dict.menu.increase}
+                          >
+                            <FiPlus className="text-sm" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedItem(null)}
+                          className="rounded-full border border-stone-200 bg-white px-6 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+                        >
+                          {dict.menu.viewOrder || "Səbətə bax"}
+                        </button>
+                      </div>
+                    );
+                  } else {
+                    // Səbətdə yoxdur - counter və əlavə edin düyməsi
+                    return (
+                      <div className="mt-4 flex items-center gap-3">
+                        <div className="flex flex-1 items-center justify-between rounded-full border border-stone-200 bg-white px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => setModalQuantity((prev) => Math.max(1, prev - 1))}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 text-stone-700 transition hover:bg-stone-50"
+                            aria-label={dict.menu.decrease}
+                          >
+                            <FiMinus className="text-sm" />
+                          </button>
+                          <span className="min-w-[40px] text-center text-base font-semibold text-stone-900">
+                            {modalQuantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setModalQuantity((prev) => prev + 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 text-stone-700 transition hover:bg-stone-50"
+                            aria-label={dict.menu.increase}
+                          >
+                            <FiPlus className="text-sm" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleAddToCart(selectedItem, modalQuantity);
+                            setSelectedItem(null);
+                            setModalQuantity(1); // Reset quantity
+                          }}
+                          className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.02] ${
+                            lastAdded?.id === selectedItem.id ? "bg-emerald-600" : "bg-stone-900"
+                          }`}
+                        >
+                          {dict.menu.addToCart}
+                        </button>
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
