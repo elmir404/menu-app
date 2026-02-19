@@ -43,7 +43,6 @@ const menuItems = [
   { title: "Kateqoriyalar", href: "/admin/menu/categories", icon: FiGrid },
   { title: "Menyu itemləri", href: "/admin/menu/items", icon: FiList },
   { title: "WiFi", href: "/admin/wifi", icon: FiWifi },
-  { title: "Branding", href: "/admin/branding", icon: FiImage },
 ];
 
 export function AdminSidebar() {

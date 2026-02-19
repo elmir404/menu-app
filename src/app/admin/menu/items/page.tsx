@@ -38,13 +38,33 @@ export default function MenuItemsPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const tenantId = session?.tenantId ?? 0;
-  const tenantCategories = (categories ?? []).filter(
-    (c) => c.tenantId === tenantId
-  );
+  
+  // Debug: Məlumatları yoxla
+  console.log("[MenuItems] Session tenantId:", tenantId);
+  console.log("[MenuItems] Categories data:", categories);
+  console.log("[MenuItems] MenuItems data:", menuItems);
+  console.log("[MenuItems] MenuItems length:", menuItems?.length);
+
+  const tenantCategories = (categories ?? []).filter((c) => {
+    // Əgər tenantId 0 və ya undefined-dırsa, bütün kateqoriyaları göstər
+    if (!tenantId || tenantId === 0) {
+      return true;
+    }
+    return c.tenantId === tenantId;
+  });
   const tenantCategoryIds = new Set(tenantCategories.map((c) => c.id));
 
+  console.log("[MenuItems] Tenant categories:", tenantCategories.length);
+  console.log("[MenuItems] Tenant category IDs:", Array.from(tenantCategoryIds));
+
   const filtered = (menuItems ?? [])
-    .filter((item) => tenantCategoryIds.has(item.menuCategoryId))
+    .filter((item) => {
+      // Əgər tenantCategoryIds boşdursa (tenantId yoxdursa), bütün itemləri göstər
+      if (tenantCategoryIds.size === 0) {
+        return true;
+      }
+      return tenantCategoryIds.has(item.menuCategoryId);
+    })
     .filter((item) =>
       item.azName.toLowerCase().includes(search.toLowerCase()) ||
       item.enName.toLowerCase().includes(search.toLowerCase())
@@ -54,6 +74,8 @@ export default function MenuItemsPage() {
         ? true
         : item.menuCategoryId === Number(categoryFilter)
     );
+
+  console.log("[MenuItems] Filtered length:", filtered.length);
 
   const getCategoryName = (categoryId: number) => {
     const cat = tenantCategories.find((c) => c.id === categoryId);

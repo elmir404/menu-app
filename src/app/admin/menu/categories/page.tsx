@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
-import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 
 export default function CategoriesPage() {
   const { data: session } = useSession();
@@ -28,14 +28,27 @@ export default function CategoriesPage() {
 
   const tenantId = session?.tenantId ?? 0;
 
+  // Debug: Məlumatları yoxla
+  console.log("[Categories] Session tenantId:", tenantId);
+  console.log("[Categories] Categories data:", categories);
+  console.log("[Categories] Categories length:", categories?.length);
+
   const filtered = (categories ?? [])
-    .filter((c) => c.tenantId === tenantId)
+    .filter((c) => {
+      // Əgər tenantId 0 və ya undefined-dırsa, bütün kateqoriyaları göstər
+      if (!tenantId || tenantId === 0) {
+        return true;
+      }
+      return c.tenantId === tenantId;
+    })
     .filter(
       (c) =>
         c.azName.toLowerCase().includes(search.toLowerCase()) ||
         c.enName.toLowerCase().includes(search.toLowerCase()) ||
         c.ruName.toLowerCase().includes(search.toLowerCase())
     );
+
+  console.log("[Categories] Filtered length:", filtered.length);
 
   const handleDelete = async () => {
     if (deleteId === null) return;
@@ -100,13 +113,20 @@ export default function CategoriesPage() {
                     <TableCell>{cat.enName}</TableCell>
                     <TableCell>{cat.ruName}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(cat.id)}
-                      >
-                        <FiTrash2 className="text-red-500" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link href={`/admin/menu/categories/${cat.id}`}>
+                            <FiEdit2 className="text-stone-600" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(cat.id)}
+                        >
+                          <FiTrash2 className="text-red-500" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

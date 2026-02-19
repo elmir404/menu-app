@@ -73,8 +73,12 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // ── Skip login page ────────────────────────────────────────────────────
-  if (pathname.startsWith("/login")) {
+  // ── Skip auth pages (no locale needed) ─────────────────────────────────
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/forgot-password")
+  ) {
     return NextResponse.next();
   }
 

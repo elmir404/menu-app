@@ -5,6 +5,14 @@ import type {
   TenantConfig,
   RestaurantPublic,
   PublicMenuCategory,
+  CountrySequence,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  VerifyOtpRequest,
+  VerifyOtpResponse,
+  ResetPasswordRequest,
+  ResendOtpRequest,
+  ResendOtpResponse,
 } from "@/types/api";
 
 export async function getPublicTenants(): Promise<PublicTenantListItem[]> {
@@ -45,6 +53,54 @@ export async function getPublicMenu(
 ): Promise<PublicMenuCategory[]> {
   const { data } = await publicApi.get<ApiResponse<PublicMenuCategory[]>>(
     `/api/public/menu/${slug}`
+  );
+  return unwrap(data);
+}
+
+// ─── Reset Password ─────────────────────────────────────────────────────────
+
+export async function getCountries(): Promise<CountrySequence[]> {
+  const { data } = await publicApi.get<ApiResponse<CountrySequence[]>>(
+    "/api/Public/countries"
+  );
+  return unwrap(data);
+}
+
+export async function forgotPassword(
+  request: ForgotPasswordRequest
+): Promise<ForgotPasswordResponse> {
+  const { data } = await publicApi.post<ApiResponse<ForgotPasswordResponse>>(
+    "/api/Users/ForgotPassword/forgot-password",
+    request
+  );
+  return unwrap(data);
+}
+
+export async function verifyForgotPasswordOtp(
+  request: VerifyOtpRequest
+): Promise<VerifyOtpResponse> {
+  const { data } = await publicApi.post<ApiResponse<VerifyOtpResponse>>(
+    "/api/Users/VerifyForgotPasswordOtp/verify-forgot-password-otp",
+    request
+  );
+  return unwrap(data);
+}
+
+export async function resetPassword(
+  request: ResetPasswordRequest
+): Promise<void> {
+  await publicApi.post<ApiResponse<void>>(
+    "/api/Users/ResetPassword/reset-password",
+    request
+  );
+}
+
+export async function resendOtp(
+  request: ResendOtpRequest
+): Promise<ResendOtpResponse> {
+  const { data } = await publicApi.post<ApiResponse<ResendOtpResponse>>(
+    "/api/Users/ResendOtp/resend-otp",
+    request
   );
   return unwrap(data);
 }

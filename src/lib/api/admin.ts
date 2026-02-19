@@ -7,6 +7,7 @@ import type {
   TenantConfig,
   WifiInfo,
   CreateMenuCategoryRequest,
+  UpdateMenuCategoryRequest,
   CreateMenuItemRequest,
   CreateWifiRequest,
   UpdateWifiRequest,
@@ -57,6 +58,18 @@ export async function addCategory(
 ): Promise<AdminMenuCategory> {
   const { data } = await authApi.post<ApiResponse<AdminMenuCategory>>(
     "/api/MenuCategory/Add",
+    body,
+    authHeaders(token)
+  );
+  return unwrap(data);
+}
+
+export async function updateCategory(
+  token: string,
+  body: UpdateMenuCategoryRequest
+): Promise<AdminMenuCategory> {
+  const { data } = await authApi.put<ApiResponse<AdminMenuCategory>>(
+    "/api/MenuCategory/Update",
     body,
     authHeaders(token)
   );

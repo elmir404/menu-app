@@ -149,6 +149,16 @@ export interface CreateMenuCategoryRequest {
   tenantId: number;
 }
 
+export interface UpdateMenuCategoryRequest {
+  id: number;
+  azName: string;
+  enName: string;
+  ruName: string;
+  azDescription?: string;
+  enDescription?: string;
+  ruDescription?: string;
+}
+
 // ─── Admin: Menu Item ────────────────────────────────────────────────────────
 export interface MenuItemImage {
   id: number;
@@ -208,4 +218,50 @@ export interface UpdateWifiRequest {
 export interface AdminBranding extends Branding {
   id?: number;
   tenantId?: number;
+}
+
+// ─── Reset Password ─────────────────────────────────────────────────────────
+export interface CountrySequence {
+  countryCode: number;
+  name: string;
+  code: string;
+  flag: string;
+}
+
+export interface ForgotPasswordRequest {
+  phoneNumber: string;
+}
+
+export interface ForgotPasswordResponse {
+  otpSent: boolean;
+  message: string;
+}
+
+export interface VerifyOtpRequest {
+  phoneNumber: string;
+  otpCode: string;
+}
+
+export interface VerifyOtpResponse {
+  success: boolean;
+  resetToken: string;
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ResendOtpRequest {
+  userId: number;
+  purpose: string; // "PasswordReset"
+}
+
+export interface ResendOtpResponse {
+  userId: number;
+  otpRequired: boolean;
+  otpSent: boolean;
+  purpose: string;
 }
