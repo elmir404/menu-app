@@ -80,7 +80,7 @@ export default function MenuPageClient({
 
   const [categories, setCategories] = useState<PublicMenuCategory[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const sectionRefs = useRef<Record<number, HTMLElement>>({});
   const headingRefs = useRef<Record<number, HTMLElement>>({});
   const categoryPillsRef = useRef<HTMLDivElement>(null);
