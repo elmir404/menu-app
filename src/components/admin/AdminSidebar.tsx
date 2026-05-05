@@ -33,6 +33,7 @@ import {
   FiList,
   FiWifi,
   FiImage,
+  FiLink,
   FiLogOut,
   FiChevronUp,
   FiExternalLink,
@@ -42,6 +43,7 @@ const menuItems = [
   { title: "Dashboard", href: "/admin", icon: FiHome },
   { title: "Kateqoriyalar", href: "/admin/menu/categories", icon: FiGrid },
   { title: "Menyu itemləri", href: "/admin/menu/items", icon: FiList },
+  { title: "Linklər", href: "/admin/links", icon: FiLink },
   { title: "WiFi", href: "/admin/wifi", icon: FiWifi },
 ];
 

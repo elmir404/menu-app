@@ -2,22 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MdOutlineMenuBook } from "react-icons/md";
-import { FiCopy, FiMapPin, FiPhone, FiMail } from "react-icons/fi";
-import { FaGoogle, FaInstagram, FaFacebook, FaWhatsapp, FaTelegram, FaLinkedin } from "react-icons/fa";
+import { FiCopy, FiMapPin, FiPhone, FiMail, FiExternalLink } from "react-icons/fi";
+import { FaGoogle } from "react-icons/fa";
 import { SiWaze } from "react-icons/si";
-// import RatingModal from "@/components/RatingModal";
 import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
+import { LinkIcon } from "@/components/LinkIcon";
 import { useDictionary } from "@/components/providers/LocaleProvider";
 import { useTenant } from "@/components/providers/TenantProvider";
-import type { RestaurantPublic } from "@/types/api";
+import type { PublicRestaurantLink, RestaurantPublic } from "@/types/api";
 import { getMediaUrl } from "@/lib/api/client";
 
 interface RestaurantPageClientProps {
   locale: string;
   tenantSlug: string;
+}
+
+function pickTitle(link: PublicRestaurantLink, locale: string): string {
+  if (locale === "en" && link.enTitle) return link.enTitle;
+  if (locale === "ru" && link.ruTitle) return link.ruTitle;
+  return link.azTitle;
+}
+
+function isInternalLink(url: string): boolean {
+  return url.startsWith("/");
 }
 
 export default function RestaurantPageClient({
@@ -28,7 +37,6 @@ export default function RestaurantPageClient({
   const tenantConfig = useTenant();
   const [restaurant, setRestaurant] = useState<RestaurantPublic | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  // const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
@@ -87,13 +95,9 @@ export default function RestaurantPageClient({
       ? getMediaUrl(branding.logoUrl)
       : "";
 
-  const socialLinks = [
-    { url: restaurant?.instagramUrl, icon: FaInstagram, label: "Instagram" },
-    { url: restaurant?.facebookUrl, icon: FaFacebook, label: "Facebook" },
-    { url: restaurant?.whatsAppUrl, icon: FaWhatsapp, label: "WhatsApp" },
-    { url: restaurant?.telegramUrl, icon: FaTelegram, label: "Telegram" },
-    { url: restaurant?.linkedInUrl, icon: FaLinkedin, label: "LinkedIn" },
-  ].filter((s) => s.url);
+  const links = [...(restaurant?.links ?? [])].sort(
+    (a, b) => a.sortOrder - b.sortOrder
+  );
 
   return (
     <div className="min-h-screen bg-stone-50 px-4 pb-8 pt-4 sm:px-5 sm:pt-5">
@@ -103,27 +107,49 @@ export default function RestaurantPageClient({
         rating={0}
       />
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
-        {/* <button
-          type="button"
-          className="flex items-center justify-center rounded-full border border-stone-200 bg-white px-4 py-2 text-xs font-medium text-stone-800"
-          onClick={() => setIsRatingOpen(true)}
-        >
-          {dict.restaurant.rateUs}
-        </button> */}
-        <Link
-          href={`/${locale}/${tenantSlug}/menu`}
-          className="cta-ripple flex flex-1 items-center justify-between gap-3 rounded-full bg-stone-900 px-4 py-3 text-sm font-medium text-white sm:px-5 sm:py-2.5"
-        >
-          <span className="flex items-center gap-2">
-            <MdOutlineMenuBook className="text-lg shrink-0 sm:text-base" aria-hidden="true" />
-            <span>{dict.nav.menu}</span>
-          </span>
-          <span className="hidden text-xs font-normal text-white/70 sm:inline">
-            {dict.restaurant.tryOurFlavors}
-          </span>
-        </Link>
-      </div>
+      {links.length > 0 && (
+        <section className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {links.map((link) => {
+            const title = pickTitle(link, locale);
+            const internal = isInternalLink(link.url);
+            const className =
+              "flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-900 transition hover:bg-stone-50";
+
+            const inner = (
+              <>
+                <span className="flex min-w-0 items-center gap-2">
+                  <LinkIcon
+                    iconKey={link.iconKey}
+                    className="text-lg shrink-0 text-stone-700"
+                  />
+                  <span className="truncate">{title}</span>
+                </span>
+                <FiExternalLink className="text-stone-400" aria-hidden="true" />
+              </>
+            );
+
+            if (internal) {
+              return (
+                <Link key={link.id} href={link.url} className={className}>
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <a
+                key={link.id}
+                href={link.url}
+                target={link.openInNewTab ? "_blank" : undefined}
+                rel={link.openInNewTab ? "noreferrer" : undefined}
+                className={className}
+              >
+                {inner}
+              </a>
+            );
+          })}
+        </section>
+      )}
 
       {/* WiFi Information */}
       {wifiList.length > 0 && (
@@ -139,7 +165,7 @@ export default function RestaurantPageClient({
                     {dict.restaurant.network}
                   </p>
                   <p className="text-sm font-medium text-stone-900">
-                    {wifi.ssid || "\u2014"}
+                    {wifi.ssid || "—"}
                   </p>
                 </div>
                 <div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
@@ -148,7 +174,7 @@ export default function RestaurantPageClient({
                   </p>
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <p className="text-sm font-medium text-stone-900">
-                      {wifi.password || "\u2014"}
+                      {wifi.password || "—"}
                     </p>
                     <button
                       type="button"
@@ -169,29 +195,31 @@ export default function RestaurantPageClient({
       )}
 
       {/* Contact Information */}
-      <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
-        <h2 className="text-sm font-semibold text-stone-800">
-          {dict.restaurant.contact}
-        </h2>
-        {restaurant?.contactPhone && (
-          <a
-            href={`tel:${restaurant.contactPhone}`}
-            className="mt-3 flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-900"
-          >
-            <FiPhone className="text-sm text-stone-600" aria-hidden="true" />
-            <span>{formatPhone(restaurant.contactPhone)}</span>
-          </a>
-        )}
-        {restaurant?.contactEmail && (
-          <a
-            href={`mailto:${restaurant.contactEmail}`}
-            className="mt-2 flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-900"
-          >
-            <FiMail className="text-sm text-stone-600" aria-hidden="true" />
-            <span>{restaurant.contactEmail}</span>
-          </a>
-        )}
-      </section>
+      {(restaurant?.contactPhone || restaurant?.contactEmail) && (
+        <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
+          <h2 className="text-sm font-semibold text-stone-800">
+            {dict.restaurant.contact}
+          </h2>
+          {restaurant?.contactPhone && (
+            <a
+              href={`tel:${restaurant.contactPhone}`}
+              className="mt-3 flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-900"
+            >
+              <FiPhone className="text-sm text-stone-600" aria-hidden="true" />
+              <span>{formatPhone(restaurant.contactPhone)}</span>
+            </a>
+          )}
+          {restaurant?.contactEmail && (
+            <a
+              href={`mailto:${restaurant.contactEmail}`}
+              className="mt-2 flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-900"
+            >
+              <FiMail className="text-sm text-stone-600" aria-hidden="true" />
+              <span>{restaurant.contactEmail}</span>
+            </a>
+          )}
+        </section>
+      )}
 
       {/* Location */}
       {(restaurant?.locationUrl || restaurant?.wazeLocationUrl) && (
@@ -235,37 +263,6 @@ export default function RestaurantPageClient({
           </div>
         </section>
       )}
-
-      {/* Social Media */}
-      {socialLinks.length > 0 && (
-        <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
-          <h2 className="text-sm font-semibold text-stone-800">
-            Social Media
-          </h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {socialLinks.map((social) => {
-              const Icon = social.icon;
-              return (
-                <a
-                  key={social.label}
-                  href={social.url!}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-stone-600 transition hover:bg-stone-100"
-                  aria-label={social.label}
-                >
-                  <Icon className="text-lg" />
-                </a>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* <RatingModal
-        isOpen={isRatingOpen}
-        onClose={() => setIsRatingOpen(false)}
-      /> */}
     </div>
   );
 }

@@ -55,6 +55,17 @@ export interface RestaurantLocation {
   timeZoneName: string;
 }
 
+export interface PublicRestaurantLink {
+  id: number;
+  azTitle: string;
+  enTitle: string | null;
+  ruTitle: string | null;
+  url: string;
+  iconKey: string | null;
+  sortOrder: number;
+  openInNewTab: boolean;
+}
+
 export interface RestaurantPublic {
   id: number;
   name: string;
@@ -70,6 +81,7 @@ export interface RestaurantPublic {
   linkedInUrl: string | null;
   branding: Branding | null;
   location: RestaurantLocation | null;
+  links: PublicRestaurantLink[];
 }
 
 // ─── Public Menu ─────────────────────────────────────────────────────────────
@@ -212,6 +224,41 @@ export interface UpdateWifiRequest {
   password: string;
   ssid: string;
   tenantId: number;
+}
+
+// ─── Admin: Tenant Links ─────────────────────────────────────────────────────
+export interface TenantLink {
+  id: number;
+  tenantId: number;
+  azTitle: string;
+  enTitle: string | null;
+  ruTitle: string | null;
+  url: string;
+  iconKey: string | null;
+  sortOrder: number;
+  openInNewTab: boolean;
+  isActive: boolean;
+}
+
+export interface CreateLinkRequest {
+  tenantId: number;
+  azTitle: string;
+  enTitle?: string | null;
+  ruTitle?: string | null;
+  url: string;
+  iconKey?: string | null;
+  sortOrder: number;
+  openInNewTab: boolean;
+}
+
+export interface UpdateLinkRequest extends CreateLinkRequest {
+  id: number;
+  isActive: boolean;
+}
+
+export interface ReorderLinksRequest {
+  tenantId: number;
+  items: { id: number; sortOrder: number }[];
 }
 
 // ─── Admin: Branding ─────────────────────────────────────────────────────────

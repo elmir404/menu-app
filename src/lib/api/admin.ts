@@ -11,6 +11,10 @@ import type {
   CreateMenuItemRequest,
   CreateWifiRequest,
   UpdateWifiRequest,
+  TenantLink,
+  CreateLinkRequest,
+  UpdateLinkRequest,
+  ReorderLinksRequest,
 } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -219,6 +223,58 @@ export async function deleteWifi(
 ): Promise<void> {
   await authApi.delete(
     `/api/RestorantWifiInformation/Delete/${id}`,
+    authHeaders(token)
+  );
+}
+
+// ─── Tenant Links ────────────────────────────────────────────────────────────
+
+export async function getLinksByTenant(
+  token: string,
+  tenantId: number
+): Promise<TenantLink[]> {
+  const { data } = await authApi.get<ApiResponse<TenantLink[]>>(
+    `/api/TenantLink/GetByTenantId/${tenantId}`,
+    authHeaders(token)
+  );
+  return unwrap(data) ?? [];
+}
+
+export async function addLink(
+  token: string,
+  body: CreateLinkRequest
+): Promise<TenantLink> {
+  const { data } = await authApi.post<ApiResponse<TenantLink>>(
+    "/api/TenantLink/Add",
+    body,
+    authHeaders(token)
+  );
+  return unwrap(data);
+}
+
+export async function updateLink(
+  token: string,
+  body: UpdateLinkRequest
+): Promise<TenantLink> {
+  const { data } = await authApi.put<ApiResponse<TenantLink>>(
+    "/api/TenantLink/Update",
+    body,
+    authHeaders(token)
+  );
+  return unwrap(data);
+}
+
+export async function deleteLink(token: string, id: number): Promise<void> {
+  await authApi.delete(`/api/TenantLink/Delete/${id}`, authHeaders(token));
+}
+
+export async function reorderLinks(
+  token: string,
+  body: ReorderLinksRequest
+): Promise<void> {
+  await authApi.put(
+    "/api/TenantLink/Reorder",
+    body,
     authHeaders(token)
   );
 }
