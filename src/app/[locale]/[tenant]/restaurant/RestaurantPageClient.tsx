@@ -8,7 +8,7 @@ import { SiWaze } from "react-icons/si";
 import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
-import { LinkIcon } from "@/components/LinkIcon";
+import { LinkIcon, getIconBrandColor } from "@/components/LinkIcon";
 import { useDictionary } from "@/components/providers/LocaleProvider";
 import { useTenant } from "@/components/providers/TenantProvider";
 import type { PublicRestaurantLink, RestaurantPublic } from "@/types/api";
@@ -108,29 +108,38 @@ export default function RestaurantPageClient({
       />
 
       {links.length > 0 && (
-        <section className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {links.map((link) => {
             const title = pickTitle(link, locale);
             const internal = isInternalLink(link.url);
-            const className =
-              "flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-900 transition hover:bg-stone-50";
+            const brandColor = getIconBrandColor(link.iconKey);
+
+            const cardClass =
+              "group flex items-center gap-4 rounded-2xl bg-white px-4 py-4 " +
+              "shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5";
 
             const inner = (
               <>
-                <span className="flex min-w-0 items-center gap-2">
-                  <LinkIcon
-                    iconKey={link.iconKey}
-                    className="text-lg shrink-0 text-stone-700"
-                  />
-                  <span className="truncate">{title}</span>
+                <span
+                  className="flex shrink-0 items-center justify-center rounded-full text-white"
+                  style={{ backgroundColor: brandColor, width: 44, height: 44 }}
+                  aria-hidden="true"
+                >
+                  <LinkIcon iconKey={link.iconKey} className="text-xl" />
                 </span>
-                <FiExternalLink className="text-stone-400" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-base font-semibold text-stone-900">
+                  {title}
+                </span>
+                <FiExternalLink
+                  className="shrink-0 text-stone-400 transition-colors group-hover:text-stone-600"
+                  aria-hidden="true"
+                />
               </>
             );
 
             if (internal) {
               return (
-                <Link key={link.id} href={link.url} className={className}>
+                <Link key={link.id} href={link.url} className={cardClass}>
                   {inner}
                 </Link>
               );
@@ -142,7 +151,7 @@ export default function RestaurantPageClient({
                 href={link.url}
                 target={link.openInNewTab ? "_blank" : undefined}
                 rel={link.openInNewTab ? "noreferrer" : undefined}
-                className={className}
+                className={cardClass}
               >
                 {inner}
               </a>

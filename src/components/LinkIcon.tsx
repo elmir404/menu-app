@@ -62,6 +62,31 @@ const ICON_MAP: Record<IconKey, IconComponent> = {
   link: FiLink,
 };
 
+export const ICON_BRAND_COLORS: Record<IconKey, string> = {
+  instagram: '#E1306C',
+  facebook:  '#1877F2',
+  whatsapp:  '#25D366',
+  telegram:  '#229ED9',
+  linkedin:  '#0A66C2',
+  twitter:   '#1DA1F2',
+  tiktok:    '#010101',
+  youtube:   '#FF0000',
+  phone:     '#34A853',
+  email:     '#EA4335',
+  location:  '#4285F4',
+  waze:      '#33CCFF',
+  website:   '#6366F1',
+  link:      '#6B7280',
+  menu:      '#F59E0B',
+  offer:     '#10B981',
+  feedback:  '#3B82F6',
+};
+
+export function getIconBrandColor(key: string | null | undefined): string {
+  if (key && key in ICON_BRAND_COLORS) return ICON_BRAND_COLORS[key as IconKey];
+  return '#6B7280';
+}
+
 export const ICON_OPTIONS: { key: IconKey; label: string }[] = [
   { key: "menu", label: "Menyu" },
   { key: "offer", label: "Təklif" },
