@@ -129,6 +129,26 @@ export default function RestaurantPageClient({
     (a, b) => a.sortOrder - b.sortOrder
   );
 
+  // Branch entity-də olan sosial URL field-ləri (yalnız branch context-də)
+  const branchSocialChips: Array<{ url: string; icon: React.ReactNode; label: string }> = [];
+  if (branchOverride) {
+    if (branchOverride.locationUrl) branchSocialChips.push({ url: branchOverride.locationUrl, icon: <FaGoogle />, label: "Google Maps" });
+    if (branchOverride.wazeLocationUrl) branchSocialChips.push({ url: branchOverride.wazeLocationUrl, icon: <SiWaze />, label: "Waze" });
+    if (branchOverride.instagramUrl) branchSocialChips.push({ url: branchOverride.instagramUrl, icon: <FiInstagram />, label: "Instagram" });
+    if (branchOverride.facebookUrl) branchSocialChips.push({ url: branchOverride.facebookUrl, icon: <FiFacebook />, label: "Facebook" });
+    if (branchOverride.whatsAppUrl) branchSocialChips.push({ url: branchOverride.whatsAppUrl, icon: <FaWhatsapp />, label: "WhatsApp" });
+    if (branchOverride.telegramUrl) branchSocialChips.push({ url: branchOverride.telegramUrl, icon: <FaTelegram />, label: "Telegram" });
+    if (branchOverride.tiktokUrl) branchSocialChips.push({ url: branchOverride.tiktokUrl, icon: <FaTiktok />, label: "TikTok" });
+    if (branchOverride.youtubeUrl) branchSocialChips.push({ url: branchOverride.youtubeUrl, icon: <FiYoutube />, label: "YouTube" });
+    if (branchOverride.twitterUrl) branchSocialChips.push({ url: branchOverride.twitterUrl, icon: <FiTwitter />, label: "Twitter/X" });
+    if (branchOverride.linkedInUrl) branchSocialChips.push({ url: branchOverride.linkedInUrl, icon: <FiLinkedin />, label: "LinkedIn" });
+    if (branchOverride.tripAdvisorUrl) branchSocialChips.push({ url: branchOverride.tripAdvisorUrl, icon: <FiGlobe />, label: "TripAdvisor" });
+    if (branchOverride.yelpUrl) branchSocialChips.push({ url: branchOverride.yelpUrl, icon: <FaYelp />, label: "Yelp" });
+    if (branchOverride.threadsUrl) branchSocialChips.push({ url: branchOverride.threadsUrl, icon: <FaThreads />, label: "Threads" });
+    if (branchOverride.pinterestUrl) branchSocialChips.push({ url: branchOverride.pinterestUrl, icon: <FaPinterestP />, label: "Pinterest" });
+    if (branchOverride.websiteUrl) branchSocialChips.push({ url: branchOverride.websiteUrl, icon: <FiGlobe />, label: "Website" });
+  }
+
   return (
     <div className="min-h-screen bg-stone-50 px-4 pb-8 pt-4 sm:px-5 sm:pt-5">
       <RestaurantHeader
@@ -145,6 +165,26 @@ export default function RestaurantPageClient({
         >
           <FiList /> {dict.nav?.menu ?? "Menyu"}
         </button>
+      )}
+
+      {isBranchContext && branchSocialChips.length > 0 && (
+        <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap gap-2">
+            {branchSocialChips.map((s, i) => (
+              <a
+                key={i}
+                href={s.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={s.label}
+                title={s.label}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+              >
+                {s.icon}
+              </a>
+            ))}
+          </div>
+        </section>
       )}
 
       {branches.length > 0 && (
