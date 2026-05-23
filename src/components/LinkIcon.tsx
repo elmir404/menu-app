@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import { MdOutlineMenuBook, MdOutlineLocalOffer } from "react-icons/md";
+import { IoWalletOutline } from "react-icons/io5";
 import {
   FiPhone,
   FiMail,
@@ -38,6 +39,7 @@ export type IconKey =
   | "location"
   | "waze"
   | "website"
+  | "loyalty"
   | "link";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
@@ -45,6 +47,7 @@ type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 const ICON_MAP: Record<IconKey, IconComponent> = {
   menu: MdOutlineMenuBook,
   offer: MdOutlineLocalOffer,
+  loyalty: IoWalletOutline,
   feedback: FiMessageSquare,
   instagram: FaInstagram,
   facebook: FaFacebook,
@@ -80,6 +83,7 @@ export const ICON_BRAND_COLORS: Record<IconKey, string> = {
   menu:      '#F59E0B',
   offer:     '#10B981',
   feedback:  '#3B82F6',
+  loyalty:   '#7C3AED',
 };
 
 export function getIconBrandColor(key: string | null | undefined): string {
@@ -88,6 +92,7 @@ export function getIconBrandColor(key: string | null | undefined): string {
 }
 
 export const ICON_OPTIONS: { key: IconKey; label: string }[] = [
+  { key: "loyalty", label: "Loyallıq proqramı" },
   { key: "menu", label: "Menyu" },
   { key: "offer", label: "Təklif" },
   { key: "feedback", label: "Şikayət / Rəy" },
