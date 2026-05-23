@@ -46,6 +46,35 @@ export interface TenantConfig {
   menuApiUrl: string;
   wifiInformation: WifiInfo[];
   branding: Branding | null;
+  branches?: TenantBranchSummary[];
+}
+
+export interface TenantBranchSummary {
+  id: number;
+  slug: string;
+  name: string;
+  address: string | null;
+  isMainBranch: boolean;
+  phone?: string | null;
+  email?: string | null;
+  photoUrl?: string | null;
+  logoUrl?: string | null;
+  locationUrl?: string | null;
+  wazeLocationUrl?: string | null;
+  menuUrl?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  whatsAppUrl?: string | null;
+  telegramUrl?: string | null;
+  linkedInUrl?: string | null;
+  tiktokUrl?: string | null;
+  tripAdvisorUrl?: string | null;
+  websiteUrl?: string | null;
+  youtubeUrl?: string | null;
+  twitterUrl?: string | null;
+  yelpUrl?: string | null;
+  threadsUrl?: string | null;
+  pinterestUrl?: string | null;
 }
 
 // ─── Restaurant (public) ────────────────────────────────────────────────────
@@ -82,6 +111,37 @@ export interface RestaurantPublic {
   branding: Branding | null;
   location: RestaurantLocation | null;
   links: PublicRestaurantLink[];
+  branch?: RestaurantBranchOverride | null;
+  wifiInformation?: WifiInfo[];
+}
+
+export interface RestaurantBranchOverride {
+  id: number;
+  slug: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  logoUrl: string | null;
+  photoUrl: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  whatsAppUrl: string | null;
+  telegramUrl: string | null;
+  linkedInUrl: string | null;
+  tiktokUrl: string | null;
+  youtubeUrl: string | null;
+  twitterUrl: string | null;
+  tripAdvisorUrl: string | null;
+  yelpUrl: string | null;
+  threadsUrl: string | null;
+  pinterestUrl: string | null;
+  websiteUrl: string | null;
+  locationUrl: string | null;
+  wazeLocationUrl: string | null;
+  menuUrl: string | null;
+  backgroundColor: string | null;
+  foregroundColor: string | null;
 }
 
 // ─── Public Menu ─────────────────────────────────────────────────────────────
@@ -230,6 +290,8 @@ export interface UpdateWifiRequest {
 export interface TenantLink {
   id: number;
   tenantId: number;
+  branchId?: number | null;
+  branchName?: string | null;
   azTitle: string;
   enTitle: string | null;
   ruTitle: string | null;
@@ -242,6 +304,7 @@ export interface TenantLink {
 
 export interface CreateLinkRequest {
   tenantId: number;
+  branchId?: number | null;
   azTitle: string;
   enTitle?: string | null;
   ruTitle?: string | null;

@@ -36,12 +36,14 @@ export async function getPublicTenant(
 }
 
 export async function getPublicRestaurant(
-  slug: string
+  slug: string,
+  branchSlug?: string | null
 ): Promise<RestaurantPublic | null> {
   try {
-    const { data } = await publicApi.get<ApiResponse<RestaurantPublic>>(
-      `/api/public/restaurants/${slug}`
-    );
+    const path = branchSlug
+      ? `/api/public/restaurants/${slug}/${branchSlug}`
+      : `/api/public/restaurants/${slug}`;
+    const { data } = await publicApi.get<ApiResponse<RestaurantPublic>>(path);
     return unwrap(data);
   } catch {
     return null;
@@ -49,11 +51,13 @@ export async function getPublicRestaurant(
 }
 
 export async function getPublicMenu(
-  slug: string
+  slug: string,
+  branchSlug?: string | null
 ): Promise<PublicMenuCategory[]> {
-  const { data } = await publicApi.get<ApiResponse<PublicMenuCategory[]>>(
-    `/api/public/menu/${slug}`
-  );
+  const path = branchSlug
+    ? `/api/public/menu/${slug}/${branchSlug}`
+    : `/api/public/menu/${slug}`;
+  const { data } = await publicApi.get<ApiResponse<PublicMenuCategory[]>>(path);
   return unwrap(data);
 }
 

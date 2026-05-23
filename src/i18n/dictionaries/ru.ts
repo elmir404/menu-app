@@ -167,6 +167,8 @@ const ru: Dictionary = {
     comment: "Комментарий",
     commentPlaceholder: "Расскажите, что вам понравилось...",
     submit: "Отправить",
+    branches: "Филиалы",
+    mainBranch: "Главный",
   },
   menu: {
     loading: "Загрузка меню...",

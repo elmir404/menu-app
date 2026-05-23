@@ -33,6 +33,8 @@ const ADMIN_ALLOWED_ROLES = new Set([
   "Tenant Admin", // Backend-dən gələn format
   "SuperAdmin",
   "Super Admin", // Ehtimal olunan format
+  "Branch Admin",
+  "BranchAdmin",
 ]);
 
 export default auth((req) => {

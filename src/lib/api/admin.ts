@@ -29,7 +29,7 @@ export async function getCategories(
   token: string
 ): Promise<AdminMenuCategory[]> {
   const { data } = await authApi.get<ApiResponse<AdminMenuCategory[]>>(
-    "/api/MenuCategory/GetAll",
+    "/api/MenuCategory/List",
     authHeaders(token)
   );
   return unwrap(data);
@@ -93,7 +93,7 @@ export async function getMenuItems(
   token: string
 ): Promise<AdminMenuItem[]> {
   const { data } = await authApi.get<ApiResponse<AdminMenuItem[]>>(
-    "/api/MenuItem/GetAll",
+    "/api/MenuItem/List",
     authHeaders(token)
   );
   return unwrap(data);
@@ -187,7 +187,7 @@ export async function getWifiByTenant(
   tenantId: number
 ): Promise<WifiInfo[]> {
   const { data } = await authApi.get<ApiResponse<WifiInfo[]>>(
-    `/api/RestorantWifiInformation/GetByTenantId/${tenantId}`,
+    `/api/RestorantWifiInformation/List?tenantId=${tenantId}`,
     authHeaders(token)
   );
   return unwrap(data);
@@ -233,8 +233,9 @@ export async function getLinksByTenant(
   token: string,
   tenantId: number
 ): Promise<TenantLink[]> {
+  // /List endpoint server-side branch-scope filter — Branch Admin yalnız öz branch link-ləri görür
   const { data } = await authApi.get<ApiResponse<TenantLink[]>>(
-    `/api/TenantLink/GetByTenantId/${tenantId}`,
+    `/api/TenantLink/List?tenantId=${tenantId}`,
     authHeaders(token)
   );
   return unwrap(data) ?? [];
@@ -277,6 +278,52 @@ export async function reorderLinks(
     body,
     authHeaders(token)
   );
+}
+
+// ─── Branch (self-service URL fields) ───────────────────────────────────────
+
+export interface BranchSocialUrls {
+  id: number;
+  name: string;
+  slug?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  photoUrl?: string | null;
+  logoUrl?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  whatsAppUrl?: string | null;
+  telegramUrl?: string | null;
+  linkedInUrl?: string | null;
+  tiktokUrl?: string | null;
+  youtubeUrl?: string | null;
+  twitterUrl?: string | null;
+  tripAdvisorUrl?: string | null;
+  yelpUrl?: string | null;
+  threadsUrl?: string | null;
+  pinterestUrl?: string | null;
+  websiteUrl?: string | null;
+  locationUrl?: string | null;
+  wazeLocationUrl?: string | null;
+  menuUrl?: string | null;
+}
+
+export async function getBranchById(token: string, id: number): Promise<BranchSocialUrls> {
+  const { data } = await authApi.get<ApiResponse<BranchSocialUrls>>(
+    `/api/branch/GetById?id=${id}`,
+    authHeaders(token)
+  );
+  return unwrap(data);
+}
+
+export async function updateBranchUrl(
+  token: string,
+  id: number,
+  field: keyof BranchSocialUrls,
+  value: string | null
+): Promise<void> {
+  const body = { [field]: value } as Record<string, string | null>;
+  await authApi.post(`/api/branch/Update?id=${id}`, body, authHeaders(token));
 }
 
 // ─── Branding ────────────────────────────────────────────────────────────────

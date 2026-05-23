@@ -165,6 +165,8 @@ const en: Dictionary = {
     comment: "Comment",
     commentPlaceholder: "Tell us what you liked...",
     submit: "Submit",
+    branches: "Branches",
+    mainBranch: "Main",
   },
   menu: {
     loading: "Loading menu...",

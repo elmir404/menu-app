@@ -11,6 +11,9 @@ declare module "next-auth" {
     tenantId: number;
     tenantSlug: string;
     tenantName: string;
+    branchId: number | null;
+    branchName: string | null;
+    branchSlug: string | null;
     roles: string[];
     firstName: string;
     lastName: string;
@@ -22,6 +25,9 @@ declare module "next-auth" {
     tenantId: number;
     tenantSlug: string;
     tenantName: string;
+    branchId: number | null;
+    branchName: string | null;
+    branchSlug: string | null;
     userId: number;
     roles: string[];
     user: {
@@ -34,6 +40,9 @@ declare module "next-auth" {
       tenantId: number;
       tenantSlug: string;
       tenantName: string;
+      branchId: number | null;
+      branchName: string | null;
+      branchSlug: string | null;
       roles: string[];
     };
   }
@@ -48,6 +57,9 @@ declare module "next-auth/jwt" {
     tenantId: number;
     tenantSlug: string;
     tenantName: string;
+    branchId: number | null;
+    branchName: string | null;
+    branchSlug: string | null;
     userId: number;
     roles: string[];
     firstName: string;

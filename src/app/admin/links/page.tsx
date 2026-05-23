@@ -50,6 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { BranchSocialLinksSection } from "@/components/admin/BranchSocialLinksSection";
 import { LinkIcon, ICON_OPTIONS, type IconKey } from "@/components/LinkIcon";
 import { FiEdit2, FiPlus, FiTrash2, FiLink, FiMenu } from "react-icons/fi";
 import type { TenantLink } from "@/types/api";
@@ -199,6 +200,9 @@ export default function LinksPage() {
 
   return (
     <div className="space-y-6">
+      {/* Branch sosial URL field-ləri — yalnız Branch Admin (session.branchId set olduqda) */}
+      {session?.branchId && <BranchSocialLinksSection />}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-stone-900">Linklər</h1>

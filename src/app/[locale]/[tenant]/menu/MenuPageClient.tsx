@@ -16,7 +16,7 @@ import {
 import { useDictionary } from "@/components/providers/LocaleProvider";
 import { useLocale } from "@/components/providers/LocaleProvider";
 import { useTenant } from "@/components/providers/TenantProvider";
-import type { PublicMenuCategory, PublicMenuItem } from "@/types/api";
+import type { PublicMenuCategory, PublicMenuItem, RestaurantPublic } from "@/types/api";
 import { getMediaUrl } from "@/lib/api/client";
 
 const SCROLL_UPDATE_DELAY_MS = 150;
@@ -35,6 +35,7 @@ interface CartItem {
 interface MenuPageClientProps {
   locale: string;
   tenantSlug: string;
+  branchSlug?: string | null;
 }
 
 function getLocalizedName(
@@ -72,6 +73,7 @@ function getLocalizedDescription(
 export default function MenuPageClient({
   locale,
   tenantSlug,
+  branchSlug,
 }: MenuPageClientProps) {
   const router = useRouter();
   const dict = useDictionary();
@@ -79,6 +81,7 @@ export default function MenuPageClient({
   const tenantConfig = useTenant();
 
   const [categories, setCategories] = useState<PublicMenuCategory[]>([]);
+  const [branchInfo, setBranchInfo] = useState<RestaurantPublic | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number>(0);
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const sectionRefs = useRef<Record<number, HTMLElement>>({});
@@ -183,7 +186,10 @@ export default function MenuPageClient({
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/public/menu/${tenantSlug}`);
+        const url = branchSlug
+          ? `${API_BASE}/api/public/menu/${tenantSlug}/${branchSlug}`
+          : `${API_BASE}/api/public/menu/${tenantSlug}`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to load menu");
         const json = await res.json();
         if (json.success && json.data) {
@@ -196,7 +202,30 @@ export default function MenuPageClient({
       }
     };
     loadMenu();
-  }, [tenantSlug, API_BASE]);
+  }, [tenantSlug, branchSlug, API_BASE]);
+
+  // Branch context-də branch logo + sosial link-lər üçün restaurant data fetch
+  useEffect(() => {
+    if (!branchSlug) {
+      setBranchInfo(null);
+      return;
+    }
+    const loadBranchInfo = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/public/restaurants/${tenantSlug}/${branchSlug}`
+        );
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.success && json.data) {
+          setBranchInfo(json.data);
+        }
+      } catch {
+        // ignore — menu render olunmağa davam edir
+      }
+    };
+    loadBranchInfo();
+  }, [tenantSlug, branchSlug, API_BASE]);
 
   useEffect(() => {
     if (!categories.length) return;
@@ -240,11 +269,34 @@ export default function MenuPageClient({
   if (status === "error") return <ErrorState message={dict.menu.error} />;
 
   const branding = tenantConfig.branding;
-  const headerImage = branding?.backgroundImageUrl
-    ? getMediaUrl(branding.backgroundImageUrl)
-    : branding?.logoUrl
-      ? getMediaUrl(branding.logoUrl)
-      : "";
+  const branchOverride = branchInfo?.branch ?? null;
+  const headerImage = (branchOverride?.photoUrl && getMediaUrl(branchOverride.photoUrl))
+    || (branchOverride?.logoUrl && getMediaUrl(branchOverride.logoUrl))
+    || (branding?.backgroundImageUrl && getMediaUrl(branding.backgroundImageUrl))
+    || (branding?.logoUrl && getMediaUrl(branding.logoUrl))
+    || "";
+  const displayName = branchOverride?.name ?? tenantConfig.name;
+
+  // Branch sosial linkləri header altında kompakt icon row
+  const branchSocialUrls: Array<{ url: string; label: string }> = branchOverride
+    ? [
+        branchOverride.locationUrl && { url: branchOverride.locationUrl, label: "Maps" },
+        branchOverride.wazeLocationUrl && { url: branchOverride.wazeLocationUrl, label: "Waze" },
+        branchOverride.instagramUrl && { url: branchOverride.instagramUrl, label: "Instagram" },
+        branchOverride.facebookUrl && { url: branchOverride.facebookUrl, label: "Facebook" },
+        branchOverride.whatsAppUrl && { url: branchOverride.whatsAppUrl, label: "WhatsApp" },
+        branchOverride.telegramUrl && { url: branchOverride.telegramUrl, label: "Telegram" },
+        branchOverride.tiktokUrl && { url: branchOverride.tiktokUrl, label: "TikTok" },
+        branchOverride.youtubeUrl && { url: branchOverride.youtubeUrl, label: "YouTube" },
+        branchOverride.twitterUrl && { url: branchOverride.twitterUrl, label: "Twitter" },
+        branchOverride.linkedInUrl && { url: branchOverride.linkedInUrl, label: "LinkedIn" },
+        branchOverride.tripAdvisorUrl && { url: branchOverride.tripAdvisorUrl, label: "TripAdvisor" },
+        branchOverride.yelpUrl && { url: branchOverride.yelpUrl, label: "Yelp" },
+        branchOverride.threadsUrl && { url: branchOverride.threadsUrl, label: "Threads" },
+        branchOverride.pinterestUrl && { url: branchOverride.pinterestUrl, label: "Pinterest" },
+        branchOverride.websiteUrl && { url: branchOverride.websiteUrl, label: "Website" },
+      ].filter((x): x is { url: string; label: string } => !!x)
+    : [];
 
   const isGrid = viewMode === "grid";
 
@@ -263,11 +315,32 @@ export default function MenuPageClient({
       <div className="sticky top-0 z-10 bg-stone-50 px-4 pb-2 pt-4">
         <RestaurantHeader
           image={headerImage}
-          name={tenantConfig.name}
+          name={displayName}
           rating={0}
           showBack
-          onBack={() => router.push(`/${locale}/${tenantSlug}/restaurant`)}
+          onBack={() => router.push(
+            branchSlug
+              ? `/${locale}/${tenantSlug}/b/${branchSlug}/restaurant`
+              : `/${locale}/${tenantSlug}/restaurant`
+          )}
         />
+
+        {branchSocialUrls.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5 px-1">
+            {branchSocialUrls.map((s) => (
+              <a
+                key={s.label}
+                href={s.url}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-700 hover:bg-stone-50"
+                aria-label={s.label}
+              >
+                {s.label}
+              </a>
+            ))}
+          </div>
+        )}
         <div className="mt-2">
           <div
             ref={categoryPillsRef}

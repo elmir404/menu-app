@@ -84,6 +84,8 @@ export interface Dictionary {
     comment: string;
     commentPlaceholder: string;
     submit: string;
+    branches?: string;
+    mainBranch?: string;
   };
   menu: {
     loading: string;

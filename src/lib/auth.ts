@@ -102,6 +102,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             tenantId,
             tenantSlug,
             tenantName,
+            branchId: data.branchId ?? null,
+            branchName: data.branchName ?? null,
+            branchSlug: data.branchSlug ?? null,
             roles: data.roles || [],
             firstName: data.firstName,
             lastName: data.lastName,
@@ -132,6 +135,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.tenantId = user.tenantId;
         token.tenantSlug = user.tenantSlug;
         token.tenantName = user.tenantName;
+        token.branchId = user.branchId;
+        token.branchName = user.branchName;
+        token.branchSlug = user.branchSlug;
         token.userId = Number(user.id);
         token.roles = user.roles;
         token.firstName = user.firstName;
@@ -179,6 +185,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       s.tenantId = token.tenantId;
       s.tenantSlug = token.tenantSlug;
       s.tenantName = token.tenantName;
+      s.branchId = token.branchId;
+      s.branchName = token.branchName;
+      s.branchSlug = token.branchSlug;
       s.userId = token.userId;
       s.roles = token.roles;
       s.user = {
@@ -190,6 +199,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         tenantId: token.tenantId,
         tenantSlug: token.tenantSlug,
         tenantName: token.tenantName,
+        branchId: token.branchId,
+        branchName: token.branchName,
+        branchSlug: token.branchSlug,
         roles: token.roles,
         email: token.email,
       };

@@ -166,6 +166,8 @@ const az: Dictionary = {
     comment: "Rəy",
     commentPlaceholder: "Nəyi bəyəndiyinizi yazın...",
     submit: "Göndər",
+    branches: "Filiallar",
+    mainBranch: "Əsas",
   },
   menu: {
     loading: "Menyu yüklənir...",

@@ -58,11 +58,18 @@ export function AdminSidebar() {
     ? getMediaUrl(tenantConfig.branding.logoUrl)
     : null;
 
+  const branchName = session?.branchName || null;
+  const branchSlug = session?.branchSlug || null;
+
   const initials = session?.user
     ? `${session.user.firstName?.[0] || ""}${session.user.lastName?.[0] || ""}`
     : "AD";
 
-  const publicMenuUrl = tenantSlug ? `/az/${tenantSlug}/menu` : null;
+  const publicMenuUrl = tenantSlug
+    ? branchSlug
+      ? `/az/${tenantSlug}/b/${branchSlug}/menu`
+      : `/az/${tenantSlug}/menu`
+    : null;
 
   return (
     <Sidebar>
@@ -87,9 +94,16 @@ export function AdminSidebar() {
                 {tenantName[0]?.toUpperCase()}
               </div>
             ) : null}
-            <Link href="/admin" className="text-lg font-bold truncate">
-              {tenantName || "Admin Panel"}
-            </Link>
+            <div className="min-w-0">
+              <Link href="/admin" className="block text-lg font-bold truncate">
+                {tenantName || "Admin Panel"}
+              </Link>
+              {branchName && (
+                <p className="text-xs text-muted-foreground truncate">
+                  Filial: <span className="font-medium">{branchName}</span>
+                </p>
+              )}
+            </div>
           </div>
           <SidebarTrigger className="md:hidden" />
         </div>
