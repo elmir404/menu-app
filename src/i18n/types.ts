@@ -102,6 +102,7 @@ export interface Dictionary {
     gridView: string;
     decrease: string;
     increase: string;
+    viewIngredients: string;
   };
   checkout: {
     title: string;

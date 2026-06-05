@@ -159,6 +159,7 @@ export interface PublicMenuItem {
   discountPrice: number;
   prepTimeMinutes: string;
   imageUrls: string[];
+  ingredientVideoUrl: string | null;
 }
 
 export interface PublicMenuCategory {
@@ -255,6 +256,7 @@ export interface AdminMenuItem {
   menuCategoryId: number;
   menuCategory: AdminMenuCategory | null;
   menuItemImages: MenuItemImage[];
+  ingredientVideoUrl: string | null;
 }
 
 export interface CreateMenuItemRequest {

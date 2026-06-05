@@ -7,6 +7,7 @@ import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import CheckoutModal from "@/components/CheckoutModal";
+import { IngredientVideoReveal } from "@/components/IngredientVideoReveal";
 import {
   Sheet,
   SheetContent,
@@ -591,14 +592,23 @@ export default function MenuPageClient({
         >
           {selectedItem && (
             <>
-              {/* Şəkil */}
-              {selectedItem.imageUrls?.[0] && (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={selectedItem.imageUrls[0]}
+              {/* Şəkil və ya tərkib videosu reveal */}
+              {selectedItem.imageUrls?.[0] && selectedItem.ingredientVideoUrl ? (
+                <IngredientVideoReveal
+                  imageUrl={selectedItem.imageUrls[0]}
+                  videoUrl={selectedItem.ingredientVideoUrl}
                   alt={getLocalizedName(selectedItem, currentLocale)}
-                  className="h-[300px] w-full object-cover sm:h-[400px]"
+                  buttonLabel={dict.menu.viewIngredients}
                 />
+              ) : (
+                selectedItem.imageUrls?.[0] && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={selectedItem.imageUrls[0]}
+                    alt={getLocalizedName(selectedItem, currentLocale)}
+                    className="h-[300px] w-full object-cover sm:h-[400px]"
+                  />
+                )
               )}
               
               {/* Məzmun */}

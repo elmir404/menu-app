@@ -47,6 +47,7 @@ export default function NewMenuItemPage() {
   const { data: categories } = useCategories();
   const addMutation = useAddMenuItem();
   const [files, setFiles] = useState<File[]>([]);
+  const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
 
   const tenantId = session?.tenantId ?? 0;
   const tenantCategories = (categories ?? []).filter(
@@ -101,6 +102,10 @@ export default function NewMenuItemPage() {
     files.forEach((file) => {
       fd.append("files", file);
     });
+
+    if (newVideoFile) {
+      fd.append("ingredientVideoFile", newVideoFile);
+    }
 
     try {
       await addMutation.mutateAsync(fd);
@@ -250,6 +255,28 @@ export default function NewMenuItemPage() {
           </CardHeader>
           <CardContent>
             <ImageUpload files={files} onChange={setFiles} maxFiles={5} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tərkib videosu (mp4/webm, max 15MB)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              type="file"
+              accept="video/mp4,video/webm"
+              onChange={(e) => setNewVideoFile(e.target.files?.[0] ?? null)}
+            />
+            {newVideoFile && (
+              <p className="text-xs text-stone-500">
+                Yeni video: {newVideoFile.name}
+              </p>
+            )}
+            <p className="text-xs text-stone-500">
+              Yalnız müştəri menyu detalında bu yemək üçün &quot;Tərkibinə bax&quot; düyməsi görünməsi
+              üçün video yüklənməlidir. Video olmadıqda heç bir düymə görünmür.
+            </p>
           </CardContent>
         </Card>
 

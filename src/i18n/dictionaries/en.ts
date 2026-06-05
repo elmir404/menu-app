@@ -183,6 +183,7 @@ const en: Dictionary = {
     gridView: "Grid view",
     decrease: "Decrease",
     increase: "Increase",
+    viewIngredients: "See ingredients",
   },
   checkout: {
     title: "Checkout",

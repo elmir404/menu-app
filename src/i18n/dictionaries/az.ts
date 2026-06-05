@@ -184,6 +184,7 @@ const az: Dictionary = {
     gridView: "Şəbəkə görünüşü",
     decrease: "Azalt",
     increase: "Artır",
+    viewIngredients: "Tərkibinə bax",
   },
   checkout: {
     title: "Sifariş",

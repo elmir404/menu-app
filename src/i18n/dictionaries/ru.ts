@@ -185,6 +185,7 @@ const ru: Dictionary = {
     gridView: "Сетка",
     decrease: "Уменьшить",
     increase: "Увеличить",
+    viewIngredients: "Состав",
   },
   checkout: {
     title: "Заказ",

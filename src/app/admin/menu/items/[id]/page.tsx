@@ -59,6 +59,8 @@ export default function MenuItemUpdatePage() {
   const [existingImageIds, setExistingImageIds] = useState<Set<number>>(
     new Set()
   );
+  const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
+  const [removeVideo, setRemoveVideo] = useState(false);
 
   const tenantId = session?.tenantId ?? 0;
   const tenantCategories = (categories ?? []).filter(
@@ -134,6 +136,13 @@ export default function MenuItemUpdatePage() {
     newFiles.forEach((file) => {
       fd.append("files", file);
     });
+
+    if (newVideoFile) {
+      fd.append("ingredientVideoFile", newVideoFile);
+    }
+    if (removeVideo) {
+      fd.append("removeIngredientVideo", "true");
+    }
 
     try {
       await updateMutation.mutateAsync(fd);
@@ -386,6 +395,61 @@ export default function MenuItemUpdatePage() {
                 maxFiles={5}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tərkib videosu (mp4/webm, max 15MB)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {menuItem?.ingredientVideoUrl && !removeVideo && !newVideoFile && (
+              <div className="space-y-2">
+                <video
+                  src={getMediaUrl(menuItem.ingredientVideoUrl)}
+                  controls
+                  muted
+                  className="max-h-48 rounded-lg"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRemoveVideo(true)}
+                >
+                  <FiX className="mr-1" /> Videonu sil
+                </Button>
+              </div>
+            )}
+            {removeVideo && (
+              <p className="text-xs text-red-600">
+                Mövcud video saxlanıldıqda silinəcək.{" "}
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => setRemoveVideo(false)}
+                >
+                  Geri al
+                </button>
+              </p>
+            )}
+            <Input
+              type="file"
+              accept="video/mp4,video/webm"
+              onChange={(e) => {
+                setNewVideoFile(e.target.files?.[0] ?? null);
+                setRemoveVideo(false);
+              }}
+            />
+            {newVideoFile && (
+              <p className="text-xs text-stone-500">
+                Yeni video: {newVideoFile.name}
+              </p>
+            )}
+            <p className="text-xs text-stone-500">
+              Yalnız müştəri menyu detalında bu yemək üçün &quot;Tərkibinə bax&quot; düyməsi görünməsi
+              üçün video yüklənməlidir. Video olmadıqda heç bir düymə görünmür.
+            </p>
           </CardContent>
         </Card>
 
