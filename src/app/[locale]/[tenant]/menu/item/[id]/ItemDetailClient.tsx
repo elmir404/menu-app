@@ -15,11 +15,11 @@ interface Props {
   item: PublicMenuItem;
 }
 
-// Drawer geometry: drawer is fixed at bottom with h-[50vh].
-// translateY(0vh) -> drawer covers bottom 50% (HALF state).
-// translateY(40vh) -> drawer is at bottom 10% (PEEK state).
-// progress 0..1 maps to translateY 0..40vh and to video.currentTime 0..duration.
-const TRANSLATE_RANGE_VH = 40;
+// Drawer geometry: drawer is fixed at bottom with h-[40vh].
+// translateY(0vh) -> drawer covers bottom 40% (HALF state).
+// translateY(30vh) -> drawer is at bottom 10% (PEEK state).
+// progress 0..1 maps to translateY 0..30vh and to video.currentTime 0..duration.
+const TRANSLATE_RANGE_VH = 30;
 
 export default function ItemDetailClient({
   locale,
@@ -42,7 +42,11 @@ export default function ItemDetailClient({
   }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const framesRef = useRef<ImageBitmap[]>([]);
+  const captureIntervalRef = useRef<number | null>(null);
+  const [showCanvas, setShowCanvas] = useState(false);
   const rafRef = useRef<number | null>(null);
   const progressRef = useRef(0);
   const isDraggingRef = useRef(false);
@@ -90,6 +94,81 @@ export default function ItemDetailClient({
     applyProgress(0);
   }, []);
 
+  // Capture frames during forward play so reverse playback can show them on a canvas.
+  useEffect(() => {
+    if (!hasVideo) return;
+    const video = videoRef.current;
+    if (!video) return;
+    const CAPTURE_INTERVAL_MS = 60;
+    const TARGET_W = 360;
+
+    const captureFrame = async () => {
+      if (video.paused || video.ended) return;
+      if (!video.videoWidth || !video.videoHeight) return;
+      const scale = TARGET_W / video.videoWidth;
+      const w = Math.max(1, Math.round(video.videoWidth * scale));
+      const h = Math.max(1, Math.round(video.videoHeight * scale));
+      try {
+        const bmp = await createImageBitmap(video, {
+          resizeWidth: w,
+          resizeHeight: h,
+          resizeQuality: "low",
+        });
+        framesRef.current.push(bmp);
+      } catch { /* ignore */ }
+    };
+
+    const start = () => {
+      if (captureIntervalRef.current !== null) return;
+      // Reset frames on fresh play from start
+      if (video.currentTime <= 0.05) {
+        framesRef.current.forEach((f) => { try { f.close?.(); } catch { /* ignore */ } });
+        framesRef.current = [];
+      }
+      captureIntervalRef.current = window.setInterval(captureFrame, CAPTURE_INTERVAL_MS);
+    };
+    const stop = () => {
+      if (captureIntervalRef.current !== null) {
+        window.clearInterval(captureIntervalRef.current);
+        captureIntervalRef.current = null;
+      }
+    };
+
+    video.addEventListener("play", start);
+    video.addEventListener("pause", stop);
+    video.addEventListener("ended", stop);
+    return () => {
+      stop();
+      video.removeEventListener("play", start);
+      video.removeEventListener("pause", stop);
+      video.removeEventListener("ended", stop);
+      framesRef.current.forEach((f) => { try { f.close?.(); } catch { /* ignore */ } });
+      framesRef.current = [];
+    };
+  }, [hasVideo]);
+
+  // Force the first video frame to render (instead of black/poster) by briefly playing then pausing.
+  useEffect(() => {
+    if (!hasVideo) return;
+    const video = videoRef.current;
+    if (!video) return;
+    const onLoaded = () => {
+      try { video.currentTime = 0; } catch { /* ignore */ }
+      const p = video.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          try { video.pause(); video.currentTime = 0; } catch { /* ignore */ }
+        }).catch(() => { /* autoplay blocked */ });
+      }
+    };
+    if (video.readyState >= 2) {
+      onLoaded();
+    } else {
+      video.addEventListener("loadeddata", onLoaded, { once: true });
+      return () => video.removeEventListener("loadeddata", onLoaded);
+    }
+  }, [hasVideo]);
+
   // RAF loop: while video is playing and user is not dragging,
   // drive drawer position from video.currentTime.
   useEffect(() => {
@@ -98,7 +177,7 @@ export default function ItemDetailClient({
     if (!video) return;
 
     const tick = () => {
-      if (!isDraggingRef.current) {
+      if (!isDraggingRef.current && rewindRafRef.current === null) {
         const duration = Number.isFinite(video.duration) ? video.duration : 0;
         if (duration > 0 && !video.paused && !video.ended) {
           applyProgress(video.currentTime / duration);
@@ -119,7 +198,9 @@ export default function ItemDetailClient({
     if (rewindRafRef.current !== null) {
       cancelAnimationFrame(rewindRafRef.current);
       rewindRafRef.current = null;
+      setRewinding(false);
     }
+    try { video.playbackRate = 1; } catch { /* ignore */ }
     if (video.paused || video.ended) {
       const p = video.play();
       if (p && typeof p.catch === "function") {
@@ -136,7 +217,9 @@ export default function ItemDetailClient({
     if (rewindRafRef.current !== null) {
       cancelAnimationFrame(rewindRafRef.current);
       rewindRafRef.current = null;
+      setRewinding(false);
     }
+    try { video.playbackRate = 1; } catch { /* ignore */ }
     const p = video.play();
     if (p && typeof p.catch === "function") {
       p.catch(() => { /* autoplay blocked */ });
@@ -150,7 +233,6 @@ export default function ItemDetailClient({
       cancelAnimationFrame(rewindRafRef.current);
       rewindRafRef.current = null;
     }
-    try { video.pause(); } catch { /* ignore */ }
     const duration = Number.isFinite(video.duration) ? video.duration : 0;
     if (duration <= 0) {
       applyProgress(0);
@@ -159,17 +241,44 @@ export default function ItemDetailClient({
       return;
     }
     setRewinding(true);
-    const startTime = video.currentTime;
+    try { video.pause(); } catch { /* ignore */ }
+    const startTime = Math.min(video.currentTime, duration - 0.001);
+    const frames = framesRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d") || null;
+    const hasFrames = frames.length > 0 && canvas !== null && ctx !== null;
+    if (hasFrames && canvas) {
+      // Match canvas to first frame size.
+      const f0 = frames[0];
+      if (canvas.width !== f0.width) canvas.width = f0.width;
+      if (canvas.height !== f0.height) canvas.height = f0.height;
+      setShowCanvas(true);
+    }
+
+    rewindRafRef.current = -1;
     const t0 = performance.now();
     const step = () => {
+      if (rewindRafRef.current === null) return;
       const elapsed = (performance.now() - t0) / 1000;
       const newTime = Math.max(0, startTime - elapsed);
-      applyProgress(newTime / duration);
-      try { video.currentTime = newTime; } catch { /* ignore */ }
+      const progress = newTime / duration;
+      applyProgress(progress);
+      if (hasFrames && ctx) {
+        const idx = Math.min(frames.length - 1, Math.floor(progress * (frames.length - 1)));
+        const bmp = frames[idx];
+        if (bmp) {
+          ctx.clearRect(0, 0, canvas!.width, canvas!.height);
+          ctx.drawImage(bmp, 0, 0, canvas!.width, canvas!.height);
+        }
+      } else {
+        try { video.currentTime = newTime; } catch { /* ignore */ }
+      }
       if (newTime > 0) {
         rewindRafRef.current = requestAnimationFrame(step);
       } else {
         rewindRafRef.current = null;
+        try { video.currentTime = 0; } catch { /* ignore */ }
+        setShowCanvas(false);
         setRewinding(false);
         setEnded(false);
       }
@@ -179,8 +288,11 @@ export default function ItemDetailClient({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const video = videoRef.current;
-    if (video && !video.paused) {
-      try { video.pause(); } catch { /* ignore */ }
+    if (video) {
+      try { video.playbackRate = 1; } catch { /* ignore */ }
+      if (!video.paused) {
+        try { video.pause(); } catch { /* ignore */ }
+      }
     }
     setEnded(false);
     setRewinding(false);
@@ -208,9 +320,7 @@ export default function ItemDetailClient({
       const duration = Number.isFinite(video.duration) ? video.duration : 0;
       if (duration > 0) {
         const target = next * duration;
-        if (Math.abs(target - video.currentTime) > 0.02) {
-          try { video.currentTime = target; } catch { /* ignore */ }
-        }
+        try { video.currentTime = target; } catch { /* ignore */ }
       }
     }
   };
@@ -230,7 +340,6 @@ export default function ItemDetailClient({
         <video
           ref={videoRef}
           src={item.ingredientVideoUrl!}
-          poster={imageUrl || undefined}
           muted
           playsInline
           preload="auto"
@@ -247,13 +356,23 @@ export default function ItemDetailClient({
               readyState: v?.readyState,
             });
           }}
-          className="fixed inset-0 z-10 h-screen w-screen cursor-pointer bg-black object-contain"
+          className="fixed inset-0 z-10 h-screen w-screen cursor-pointer bg-black object-contain object-top"
+          style={{ visibility: showCanvas ? "hidden" : "visible" }}
         />
       )}
 
+      {hasVideo && (
+        <canvas
+          ref={canvasRef}
+          className="pointer-events-none fixed inset-0 z-10 h-screen w-screen bg-black object-contain object-top"
+          style={{ display: showCanvas ? "block" : "none", objectFit: "contain", objectPosition: "top" }}
+        />
+      )}
+
+
       {/* Image — only when no video */}
       {!hasVideo && imageUrl && (
-        <div className="fixed inset-x-0 top-0 z-10 h-[50vh] overflow-hidden bg-black">
+        <div className="fixed inset-x-0 top-0 z-10 h-[60vh] overflow-hidden bg-black">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
@@ -275,16 +394,18 @@ export default function ItemDetailClient({
       {/* Custom controlled drawer */}
       <div
         ref={drawerRef}
-        className="fixed inset-x-0 bottom-0 z-40 flex h-[50vh] flex-col rounded-t-3xl bg-white shadow-2xl"
-        style={{ transition: "transform 80ms linear", touchAction: "none" }}
+        className="fixed inset-x-0 bottom-0 z-40 flex h-[40vh] flex-col rounded-t-3xl bg-white shadow-2xl"
+        style={{ transition: "none", touchAction: "none" }}
       >
         <div
-          className="mx-auto mt-3 h-1.5 w-12 flex-shrink-0 cursor-grab touch-none rounded-full bg-stone-300 active:cursor-grabbing"
+          className="flex w-full flex-shrink-0 cursor-grab touch-none justify-center py-3 active:cursor-grabbing"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-        />
+        >
+          <div className="h-1.5 w-12 rounded-full bg-stone-300" />
+        </div>
 
         <h1 className="sr-only">{name}</h1>
 
