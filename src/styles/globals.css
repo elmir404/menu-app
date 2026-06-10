@@ -4,6 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Vaul drawer snap-point animation: slow down for smoother feel */
+[data-vaul-drawer][data-vaul-drawer-direction="bottom"]:not([data-vaul-dragging="true"]) {
+  transition: transform 750ms cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
 @keyframes ctaPulse {
   0% {
     transform: translateY(0);

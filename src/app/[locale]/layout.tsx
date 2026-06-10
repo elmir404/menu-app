@@ -21,7 +21,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="min-h-screen bg-stone-50 antialiased">
+      <body className="min-h-screen bg-stone-50 antialiased" suppressHydrationWarning>
         {children}
         <Toaster richColors position="top-right" />
       </body>

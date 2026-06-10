@@ -184,6 +184,7 @@ const en: Dictionary = {
     decrease: "Decrease",
     increase: "Increase",
     viewIngredients: "See ingredients",
+    scrollUp: "Scroll up",
   },
   checkout: {
     title: "Checkout",

@@ -185,6 +185,7 @@ const az: Dictionary = {
     decrease: "Azalt",
     increase: "Artır",
     viewIngredients: "Tərkibinə bax",
+    scrollUp: "Yuxarı sürüşdür",
   },
   checkout: {
     title: "Sifariş",

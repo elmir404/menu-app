@@ -186,6 +186,7 @@ const ru: Dictionary = {
     decrease: "Уменьшить",
     increase: "Увеличить",
     viewIngredients: "Состав",
+    scrollUp: "Прокрутить вверх",
   },
   checkout: {
     title: "Заказ",

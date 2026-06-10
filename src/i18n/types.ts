@@ -103,6 +103,7 @@ export interface Dictionary {
     decrease: string;
     increase: string;
     viewIngredients: string;
+    scrollUp: string;
   };
   checkout: {
     title: string;
