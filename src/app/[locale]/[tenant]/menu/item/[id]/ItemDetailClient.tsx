@@ -369,38 +369,40 @@ export default function ItemDetailClient({
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black [min-height:100dvh]">
-      {/* Video — full screen bg; tap to play/pause */}
+      {/* Video container — constrained to source aspect (9:16) so contain has no visible black band */}
       {hasVideo && (
-        <video
-          ref={videoRef}
-          src={item.ingredientVideoUrl!}
-          muted
-          playsInline
-          preload="auto"
-          onClick={handleVideoTap}
-          onPlay={() => { setPlaying(true); setEnded(false); }}
-          onPause={() => setPlaying(false)}
-          onEnded={() => { setPlaying(false); setEnded(true); }}
-          onError={(e) => {
-            const v = e.currentTarget as HTMLVideoElement | null;
-            console.error("[ItemDetail] video load error:", {
-              src: v?.src,
-              error: v?.error,
-              networkState: v?.networkState,
-              readyState: v?.readyState,
-            });
-          }}
-          className="fixed inset-0 z-10 h-[100dvh] w-screen cursor-pointer bg-black object-cover object-top"
-          style={{ visibility: showCanvas ? "hidden" : "visible" }}
-        />
-      )}
-
-      {hasVideo && (
-        <canvas
-          ref={canvasRef}
-          className="pointer-events-none fixed inset-0 z-10 h-[100dvh] w-screen bg-black object-cover object-top"
-          style={{ display: showCanvas ? "block" : "none", objectFit: "cover", objectPosition: "top" }}
-        />
+        <div
+          className="fixed inset-x-0 top-0 z-10 w-screen overflow-hidden bg-black"
+          style={{ height: "min(100dvh, calc(100vw * 16 / 9))", maxHeight: "100dvh" }}
+        >
+          <video
+            ref={videoRef}
+            src={item.ingredientVideoUrl!}
+            muted
+            playsInline
+            preload="auto"
+            onClick={handleVideoTap}
+            onPlay={() => { setPlaying(true); setEnded(false); }}
+            onPause={() => setPlaying(false)}
+            onEnded={() => { setPlaying(false); setEnded(true); }}
+            onError={(e) => {
+              const v = e.currentTarget as HTMLVideoElement | null;
+              console.error("[ItemDetail] video load error:", {
+                src: v?.src,
+                error: v?.error,
+                networkState: v?.networkState,
+                readyState: v?.readyState,
+              });
+            }}
+            className="absolute inset-0 h-full w-full cursor-pointer bg-black object-cover object-center"
+            style={{ visibility: showCanvas ? "hidden" : "visible" }}
+          />
+          <canvas
+            ref={canvasRef}
+            className="pointer-events-none absolute inset-0 h-full w-full bg-black"
+            style={{ display: showCanvas ? "block" : "none", objectFit: "cover", objectPosition: "center" }}
+          />
+        </div>
       )}
 
 
@@ -411,7 +413,7 @@ export default function ItemDetailClient({
           <img
             src={imageUrl}
             alt={name}
-            className="h-full w-full object-cover object-top"
+            className="h-full w-full object-contain object-top"
           />
         </div>
       )}
