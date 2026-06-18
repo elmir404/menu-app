@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useMenuItems, useDeleteMenuItem } from "@/hooks/use-menu-items";
+import {
+  useMenuItems,
+  useDeleteMenuItem,
+  useReorderMenuItems,
+} from "@/hooks/use-menu-items";
 import { useCategories } from "@/hooks/use-categories";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -27,55 +31,159 @@ import {
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { getMediaUrl } from "@/lib/api/client";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
+import { GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { AdminMenuItem } from "@/types/api";
+
+function SortableRow({
+  item,
+  thumb,
+  categoryName,
+  onDelete,
+  draggable,
+}: {
+  item: AdminMenuItem;
+  thumb: string | null;
+  categoryName: string;
+  onDelete: (id: number) => void;
+  draggable: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id, disabled: !draggable });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    background: isDragging ? "#f5f5f4" : undefined,
+  };
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      <TableCell
+        className={`w-10 ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
+        {...(draggable ? attributes : {})}
+        {...(draggable ? listeners : {})}
+      >
+        <GripVertical
+          className={`size-4 ${draggable ? "text-stone-400" : "text-stone-200"}`}
+        />
+      </TableCell>
+      <TableCell>
+        {thumb ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={thumb}
+            alt={item.azName}
+            className="h-10 w-10 rounded object-cover"
+          />
+        ) : (
+          <div className="flex h-10 w-10 items-center justify-center rounded bg-stone-100 text-xs text-stone-400">
+            N/A
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="font-medium">{item.azName}</TableCell>
+      <TableCell>
+        {item.currencySign}
+        {item.price}
+        {item.discountPrice > 0 && (
+          <span className="ml-1 text-xs text-emerald-600">
+            → {item.currencySign}
+            {item.discountPrice}
+          </span>
+        )}
+      </TableCell>
+      <TableCell>{categoryName}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-1">
+          <Button variant="ghost" size="sm" asChild title="Yenilə">
+            <Link href={`/admin/menu/items/${item.id}`}>
+              <FiEdit2 className="text-stone-600" />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(item.id)}
+          >
+            <FiTrash2 className="text-red-500" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 export default function MenuItemsPage() {
   const { data: session } = useSession();
   const { data: menuItems, isLoading } = useMenuItems();
   const { data: categories } = useCategories();
   const deleteMutation = useDeleteMenuItem();
+  const reorderMutation = useReorderMenuItems();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [items, setItems] = useState<AdminMenuItem[]>([]);
 
   const tenantId = session?.tenantId ?? 0;
-  
-  // Debug: Məlumatları yoxla
-  console.log("[MenuItems] Session tenantId:", tenantId);
-  console.log("[MenuItems] Categories data:", categories);
-  console.log("[MenuItems] MenuItems data:", menuItems);
-  console.log("[MenuItems] MenuItems length:", menuItems?.length);
 
-  const tenantCategories = (categories ?? []).filter((c) => {
-    // Əgər tenantId 0 və ya undefined-dırsa, bütün kateqoriyaları göstər
-    if (!tenantId || tenantId === 0) {
-      return true;
-    }
-    return c.tenantId === tenantId;
-  });
-  const tenantCategoryIds = new Set(tenantCategories.map((c) => c.id));
+  const tenantCategories = useMemo(
+    () =>
+      (categories ?? []).filter((c) => {
+        if (!tenantId || tenantId === 0) return true;
+        return c.tenantId === tenantId;
+      }),
+    [categories, tenantId]
+  );
+  const tenantCategoryIds = useMemo(
+    () => new Set(tenantCategories.map((c) => c.id)),
+    [tenantCategories]
+  );
 
-  console.log("[MenuItems] Tenant categories:", tenantCategories.length);
-  console.log("[MenuItems] Tenant category IDs:", Array.from(tenantCategoryIds));
+  const filtered = useMemo(
+    () =>
+      (menuItems ?? [])
+        .filter((item) =>
+          tenantCategoryIds.size === 0
+            ? true
+            : tenantCategoryIds.has(item.menuCategoryId)
+        )
+        .filter(
+          (item) =>
+            item.azName.toLowerCase().includes(search.toLowerCase()) ||
+            item.enName.toLowerCase().includes(search.toLowerCase())
+        )
+        .filter((item) =>
+          categoryFilter === "all"
+            ? true
+            : item.menuCategoryId === Number(categoryFilter)
+        ),
+    [menuItems, tenantCategoryIds, search, categoryFilter]
+  );
 
-  const filtered = (menuItems ?? [])
-    .filter((item) => {
-      // Əgər tenantCategoryIds boşdursa (tenantId yoxdursa), bütün itemləri göstər
-      if (tenantCategoryIds.size === 0) {
-        return true;
-      }
-      return tenantCategoryIds.has(item.menuCategoryId);
-    })
-    .filter((item) =>
-      item.azName.toLowerCase().includes(search.toLowerCase()) ||
-      item.enName.toLowerCase().includes(search.toLowerCase())
-    )
-    .filter((item) =>
-      categoryFilter === "all"
-        ? true
-        : item.menuCategoryId === Number(categoryFilter)
-    );
+  useEffect(() => {
+    setItems(filtered);
+  }, [filtered]);
 
-  console.log("[MenuItems] Filtered length:", filtered.length);
+  // Drag yalnız tək kateqoriya filteri seçildikdə aktiv ("Hamısı" üçün cross-cat
+  // drag-reorder backend tərəfindən qadağandır, ona görə UI də disable edir).
+  const dragEnabled = categoryFilter !== "all";
+  const activeCategoryId = dragEnabled ? Number(categoryFilter) : null;
 
   const getCategoryName = (categoryId: number) => {
     const cat = tenantCategories.find((c) => c.id === categoryId);
@@ -90,6 +198,32 @@ export default function MenuItemsPage() {
       setDeleteId(null);
     } catch {
       toast.error("Xəta baş verdi");
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || activeCategoryId === null) return;
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(items, oldIndex, newIndex);
+    setItems(next);
+    try {
+      await reorderMutation.mutateAsync({
+        tenantId,
+        menuCategoryId: activeCategoryId,
+        items: next.map((i, idx) => ({ id: i.id, sortOrder: idx })),
+      });
+      toast.success("Sıralama yeniləndi");
+    } catch {
+      toast.error("Sıralama yenilənmədi");
+      setItems(filtered);
     }
   };
 
@@ -117,7 +251,7 @@ export default function MenuItemsPage() {
             <SelectValue placeholder="Kateqoriya" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Hamısı</SelectItem>
+            <SelectItem value="all">Hamısı (sıralama deaktiv)</SelectItem>
             {tenantCategories.map((cat) => (
               <SelectItem key={cat.id} value={String(cat.id)}>
                 {cat.azName}
@@ -125,6 +259,11 @@ export default function MenuItemsPage() {
             ))}
           </SelectContent>
         </Select>
+        {!dragEnabled && (
+          <p className="self-center text-xs text-stone-500">
+            Sıralamaq üçün bir kateqoriya seç
+          </p>
+        )}
       </div>
 
       {isLoading ? (
@@ -138,6 +277,7 @@ export default function MenuItemsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10"></TableHead>
                 <TableHead>Şəkil</TableHead>
                 <TableHead>Ad (AZ)</TableHead>
                 <TableHead>Qiymət</TableHead>
@@ -146,68 +286,39 @@ export default function MenuItemsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
+              {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-stone-500">
+                  <TableCell colSpan={6} className="text-center text-stone-500">
                     Item tapılmadı
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((item) => {
-                  const thumb =
-                    item.menuItemImages?.[0]?.path
-                      ? getMediaUrl(item.menuItemImages[0].path)
-                      : null;
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        {thumb ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img
-                            src={thumb}
-                            alt={item.azName}
-                            className="h-10 w-10 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded bg-stone-100 text-xs text-stone-400">
-                            N/A
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">{item.azName}</TableCell>
-                      <TableCell>
-                        {item.currencySign}{item.price}
-                        {item.discountPrice > 0 && (
-                          <span className="ml-1 text-xs text-emerald-600">
-                            → {item.currencySign}{item.discountPrice}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>{getCategoryName(item.menuCategoryId)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            title="Yenilə"
-                          >
-                            <Link href={`/admin/menu/items/${item.id}`}>
-                              <FiEdit2 className="text-stone-600" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteId(item.id)}
-                          >
-                            <FiTrash2 className="text-red-500" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={items.map((i) => i.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {items.map((item) => {
+                      const thumb = item.menuItemImages?.[0]?.path
+                        ? getMediaUrl(item.menuItemImages[0].path)
+                        : null;
+                      return (
+                        <SortableRow
+                          key={item.id}
+                          item={item}
+                          thumb={thumb}
+                          categoryName={getCategoryName(item.menuCategoryId)}
+                          onDelete={setDeleteId}
+                          draggable={dragEnabled}
+                        />
+                      );
+                    })}
+                  </SortableContext>
+                </DndContext>
               )}
             </TableBody>
           </Table>

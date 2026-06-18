@@ -8,6 +8,8 @@ import {
   addMenuItem,
   updateMenuItem,
   deleteMenuItem,
+  reorderMenuItems,
+  type ReorderMenuRequest,
 } from "@/lib/api/admin";
 
 export function useMenuItems() {
@@ -66,6 +68,19 @@ export function useDeleteMenuItem() {
 
   return useMutation({
     mutationFn: (id: number) => deleteMenuItem(token, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menuItems"] });
+    },
+  });
+}
+
+export function useReorderMenuItems() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const token = session?.accessToken ?? "";
+
+  return useMutation({
+    mutationFn: (body: ReorderMenuRequest) => reorderMenuItems(token, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["menuItems"] });
     },

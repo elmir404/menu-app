@@ -338,7 +338,7 @@ export default function MenuPageClient({
               </h2>
               <div
                 className={`mt-3 ${
-                  viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"
+                  viewMode === "grid" ? "grid grid-cols-2 gap-3 items-start" : "space-y-3"
                 }`}
               >
                 {category.items.map((item) => {
@@ -383,7 +383,7 @@ export default function MenuPageClient({
                         >
                           <h3
                             className={`text-sm font-semibold text-stone-900 ${
-                              isGrid ? "line-clamp-1 min-h-[20px]" : ""
+                              isGrid ? "min-h-[20px] break-words" : ""
                             }`}
                           >
                             {itemName}

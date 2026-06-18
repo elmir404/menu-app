@@ -87,6 +87,35 @@ export async function deleteCategory(
   await authApi.delete(`/api/MenuCategory/Delete/${id}`, authHeaders(token));
 }
 
+export interface ReorderMenuRequest {
+  tenantId: number;
+  branchId?: number | null;
+  menuCategoryId?: number;
+  items: { id: number; sortOrder: number }[];
+}
+
+export async function reorderCategories(
+  token: string,
+  body: ReorderMenuRequest
+): Promise<void> {
+  await authApi.post(
+    "/api/MenuCategory/Reorder",
+    body,
+    authHeaders(token)
+  );
+}
+
+export async function reorderMenuItems(
+  token: string,
+  body: ReorderMenuRequest
+): Promise<void> {
+  await authApi.post(
+    "/api/MenuItem/Reorder",
+    body,
+    authHeaders(token)
+  );
+}
+
 // ─── Menu Items ──────────────────────────────────────────────────────────────
 
 export async function getMenuItems(

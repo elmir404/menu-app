@@ -8,6 +8,8 @@ import {
   addCategory,
   updateCategory,
   deleteCategory,
+  reorderCategories,
+  type ReorderMenuRequest,
 } from "@/lib/api/admin";
 import type {
   CreateMenuCategoryRequest,
@@ -70,6 +72,19 @@ export function useDeleteCategory() {
 
   return useMutation({
     mutationFn: (id: number) => deleteCategory(token, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+export function useReorderCategories() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const token = session?.accessToken ?? "";
+
+  return useMutation({
+    mutationFn: (body: ReorderMenuRequest) => reorderCategories(token, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },

@@ -209,6 +209,8 @@ export interface AdminMenuCategory {
   enDescription: string | null;
   ruDescription: string | null;
   tenantId: number;
+  sortOrder: number;
+  branchId?: number | null;
   menuItems: AdminMenuItem[] | null;
 }
 
@@ -257,6 +259,8 @@ export interface AdminMenuItem {
   menuCategory: AdminMenuCategory | null;
   menuItemImages: MenuItemImage[];
   ingredientVideoUrl: string | null;
+  sortOrder: number;
+  branchId?: number | null;
 }
 
 export interface CreateMenuItemRequest {
