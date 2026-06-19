@@ -150,8 +150,6 @@ export default function RestaurantPageClient({
     if (branchOverride.websiteUrl) branchSocialChips.push({ url: branchOverride.websiteUrl, icon: <FiGlobe />, label: "Website" });
   }
 
-  const pageBg = branchOverride?.backgroundColor || "#fafaf9";
-  const pageFg = branchOverride?.foregroundColor || "#1c1917";
   const bannerVideo = branchOverride?.bannerVideoUrl
     ? getMediaUrl(branchOverride.bannerVideoUrl)
     : null;
@@ -163,10 +161,7 @@ export default function RestaurantPageClient({
     .filter(Boolean) as string[];
 
   return (
-    <div
-      className="min-h-screen px-4 pb-8 pt-4 sm:px-5 sm:pt-5"
-      style={{ backgroundColor: pageBg, color: pageFg }}
-    >
+    <div className="min-h-screen bg-stone-50 px-4 pb-8 pt-4 sm:px-5 sm:pt-5">
       {bannerVideo ? (
         <video
           src={bannerVideo}

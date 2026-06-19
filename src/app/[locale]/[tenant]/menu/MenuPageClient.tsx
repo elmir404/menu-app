@@ -247,11 +247,8 @@ export default function MenuPageClient({
   }));
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: pageFg }}>
-      <div
-        className="sticky top-0 z-10 px-4 pb-2 pt-4"
-        style={{ backgroundColor: pageBg }}
-      >
+    <div className="min-h-screen bg-stone-50">
+      <div className="sticky top-0 z-10 bg-stone-50 px-4 pb-2 pt-4">
         <RestaurantHeader
           image={headerImage}
           name={displayName}
