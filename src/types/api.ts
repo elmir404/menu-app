@@ -142,6 +142,14 @@ export interface RestaurantBranchOverride {
   menuUrl: string | null;
   backgroundColor: string | null;
   foregroundColor: string | null;
+
+  // Banner + announcement
+  bannerVideoUrl: string | null;
+  bannerVideoPosterUrl: string | null;
+  bannerImages: string[];
+  announcementAz: string | null;
+  announcementEn: string | null;
+  announcementRu: string | null;
 }
 
 // ─── Public Menu ─────────────────────────────────────────────────────────────
@@ -291,6 +299,45 @@ export interface UpdateWifiRequest {
   password: string;
   ssid: string;
   tenantId: number;
+}
+
+// ─── Admin: Branch ───────────────────────────────────────────────────────────
+export interface AdminBranch {
+  id: number;
+  tenantId: number;
+  name: string;
+  slug?: string | null;
+  isMainBranch: boolean;
+  backgroundColor?: string | null;
+  foregroundColor?: string | null;
+  // Banner + announcement
+  bannerVideoUrl?: string | null;
+  bannerVideoPosterUrl?: string | null;
+  bannerVideoFileName?: string | null;
+  bannerImagesJson?: string | null;
+  announcementAz?: string | null;
+  announcementEn?: string | null;
+  announcementRu?: string | null;
+}
+
+export interface UpdateBranchPatchRequest {
+  // PATCH semantics on backend — only non-null fields applied
+  backgroundColor?: string | null;
+  foregroundColor?: string | null;
+  bannerVideoUrl?: string | null;
+  bannerVideoPosterUrl?: string | null;
+  bannerVideoFileName?: string | null;
+  bannerImagesJson?: string | null;
+  announcementAz?: string | null;
+  announcementEn?: string | null;
+  announcementRu?: string | null;
+}
+
+export interface BannerVideoUploadResponse {
+  videoUrl: string;
+  videoFileName: string;
+  posterUrl: string | null;
+  posterFileName: string | null;
 }
 
 // ─── Admin: Tenant Links ─────────────────────────────────────────────────────

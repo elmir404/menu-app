@@ -37,12 +37,14 @@ import {
   FiLogOut,
   FiChevronUp,
   FiExternalLink,
+  FiMapPin,
 } from "react-icons/fi";
 
 const menuItems = [
   { title: "Dashboard", href: "/admin", icon: FiHome },
   { title: "Kateqoriyalar", href: "/admin/menu/categories", icon: FiGrid },
   { title: "Menyu itemləri", href: "/admin/menu/items", icon: FiList },
+  { title: "Filial", href: "/admin/branch", icon: FiMapPin },
   { title: "Linklər", href: "/admin/links", icon: FiLink },
   { title: "WiFi", href: "/admin/wifi", icon: FiWifi },
 ];

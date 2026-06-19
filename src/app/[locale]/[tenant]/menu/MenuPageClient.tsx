@@ -195,6 +195,24 @@ export default function MenuPageClient({
     || "";
   const displayName = branchOverride?.name ?? tenantConfig.name;
 
+  // Branch tema rəngləri (boşdursa standart stone-50/900-a fallback)
+  const pageBg = branchOverride?.backgroundColor || "#fafaf9";
+  const pageFg = branchOverride?.foregroundColor || "#1c1917";
+  const activePillBg = pageFg;
+  const activePillFg = pageBg;
+  const addBtnBg = pageFg;
+  const addBtnFg = pageBg;
+
+  // 3-dil announcement (locale fallback chain: cari → az → en → ru)
+  const announcement =
+    (currentLocale === "az" && branchOverride?.announcementAz) ||
+    (currentLocale === "ru" && branchOverride?.announcementRu) ||
+    (currentLocale === "en" && branchOverride?.announcementEn) ||
+    branchOverride?.announcementAz ||
+    branchOverride?.announcementEn ||
+    branchOverride?.announcementRu ||
+    null;
+
   // Branch sosial linkləri header altında kompakt icon row
   const branchSocialUrls: Array<{ url: string; label: string }> = branchOverride
     ? [
@@ -229,8 +247,11 @@ export default function MenuPageClient({
   }));
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <div className="sticky top-0 z-10 bg-stone-50 px-4 pb-2 pt-4">
+    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: pageFg }}>
+      <div
+        className="sticky top-0 z-10 px-4 pb-2 pt-4"
+        style={{ backgroundColor: pageBg }}
+      >
         <RestaurantHeader
           image={headerImage}
           name={displayName}
@@ -242,6 +263,20 @@ export default function MenuPageClient({
               : `/${locale}/${tenantSlug}/restaurant`
           )}
         />
+
+        {announcement && (
+          <div
+            className="mx-1 mt-2 rounded-lg border px-3 py-2 text-xs font-medium"
+            style={{
+              backgroundColor: pageFg,
+              color: pageBg,
+              borderColor: pageFg,
+            }}
+            role="status"
+          >
+            {announcement}
+          </div>
+        )}
 
         {branchSocialUrls.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5 px-1">
@@ -271,11 +306,12 @@ export default function MenuPageClient({
                   if (node) categoryButtonRefs.current[category.id] = node;
                 }}
                 type="button"
-                className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium ${
+                className="whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium"
+                style={
                   activeCategoryId === category.id
-                    ? "border-stone-900 bg-stone-900 text-white"
-                    : "border-stone-200 bg-white text-stone-700"
-                }`}
+                    ? { backgroundColor: activePillBg, color: activePillFg, borderColor: activePillBg }
+                    : { backgroundColor: "transparent", color: pageFg, borderColor: pageFg + "33" }
+                }
                 onClick={() => {
                   isClickScrollingRef.current = true;
                   setActiveCategoryId(category.id);
@@ -354,7 +390,7 @@ export default function MenuPageClient({
 
                   const cardClassName = `relative block h-full cursor-pointer rounded-2xl border border-stone-200 bg-white p-3 shadow-sm transition hover:shadow-md ${
                     isGrid
-                      ? "flex flex-col gap-2 pb-12"
+                      ? "flex flex-col gap-2"
                       : "flex min-h-[5.5rem] items-center gap-3 pr-24"
                   }`;
 
@@ -374,31 +410,17 @@ export default function MenuPageClient({
                         />
                       )}
                       <div className={isGrid ? "flex min-h-0 flex-1 flex-col" : "flex-1"}>
-                        <div
-                          className={`flex items-start ${
-                            isGrid
-                              ? "justify-between gap-2"
-                              : "items-center justify-between gap-2"
-                          }`}
-                        >
-                          <h3
-                            className={`text-sm font-semibold text-stone-900 ${
-                              isGrid ? "min-h-[20px] break-words" : ""
-                            }`}
-                          >
+                        {isGrid ? (
+                          <h3 className="break-words text-sm font-semibold text-stone-900">
                             {itemName}
                           </h3>
-                          {isGrid && (
-                            <span className="flex items-center gap-1 text-sm font-semibold text-stone-900">
-                              {hasDiscount && (
-                                <span className="text-xs text-stone-400 line-through">
-                                  {item.currencySign}{item.price}
-                                </span>
-                              )}
-                              {item.currencySign}{displayPrice}
-                            </span>
-                          )}
-                        </div>
+                        ) : (
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-sm font-semibold text-stone-900">
+                              {itemName}
+                            </h3>
+                          </div>
+                        )}
                         {itemDesc && (
                           <p
                             className={`mt-1 text-xs text-stone-600 ${
@@ -420,20 +442,32 @@ export default function MenuPageClient({
                         )}
                       </div>
                       {isGrid ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleAddToCart(item);
-                          }}
-                          className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition hover:scale-105 ${
-                            lastAdded?.id === item.id ? "bg-emerald-600" : "bg-stone-900"
-                          }`}
-                          aria-label={dict.menu.addToCart}
-                        >
-                          <FiPlus className="text-base" />
-                        </button>
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <span className="flex items-center gap-1 text-sm font-semibold text-stone-900">
+                            {hasDiscount && (
+                              <span className="text-xs text-stone-400 line-through">
+                                {item.currencySign}{item.price}
+                              </span>
+                            )}
+                            {item.currencySign}{displayPrice}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleAddToCart(item);
+                            }}
+                            className="flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition hover:scale-105"
+                            style={{
+                              backgroundColor: lastAdded?.id === item.id ? "#059669" : addBtnBg,
+                              color: addBtnFg,
+                            }}
+                            aria-label={dict.menu.addToCart}
+                          >
+                            <FiPlus className="text-base" />
+                          </button>
+                        </div>
                       ) : (
                         <div className="absolute inset-y-3 right-3 flex flex-col items-end justify-between gap-2">
                           <span className="flex items-center gap-1 text-sm font-semibold text-stone-900">

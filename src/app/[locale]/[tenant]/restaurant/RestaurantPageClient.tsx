@@ -7,6 +7,7 @@ import { FiCopy, FiMapPin, FiPhone, FiMail, FiExternalLink, FiChevronRight, FiIn
 import { FaGoogle, FaWhatsapp, FaTelegram, FaTiktok, FaPinterestP, FaYelp, FaThreads } from "react-icons/fa6";
 import { SiWaze } from "react-icons/si";
 import RestaurantHeader from "@/components/RestaurantHeader";
+import { BannerSlideshow } from "@/components/BannerSlideshow";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import { LinkIcon, getIconBrandColor } from "@/components/LinkIcon";
@@ -149,13 +150,46 @@ export default function RestaurantPageClient({
     if (branchOverride.websiteUrl) branchSocialChips.push({ url: branchOverride.websiteUrl, icon: <FiGlobe />, label: "Website" });
   }
 
+  const pageBg = branchOverride?.backgroundColor || "#fafaf9";
+  const pageFg = branchOverride?.foregroundColor || "#1c1917";
+  const bannerVideo = branchOverride?.bannerVideoUrl
+    ? getMediaUrl(branchOverride.bannerVideoUrl)
+    : null;
+  const bannerPoster = branchOverride?.bannerVideoPosterUrl
+    ? getMediaUrl(branchOverride.bannerVideoPosterUrl)
+    : null;
+  const bannerImages = (branchOverride?.bannerImages ?? [])
+    .map((u) => getMediaUrl(u))
+    .filter(Boolean) as string[];
+
   return (
-    <div className="min-h-screen bg-stone-50 px-4 pb-8 pt-4 sm:px-5 sm:pt-5">
-      <RestaurantHeader
-        image={headerImage || ""}
-        name={displayName}
-        rating={0}
-      />
+    <div
+      className="min-h-screen px-4 pb-8 pt-4 sm:px-5 sm:pt-5"
+      style={{ backgroundColor: pageBg, color: pageFg }}
+    >
+      {bannerVideo ? (
+        <video
+          src={bannerVideo}
+          poster={bannerPoster ?? undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="aspect-[16/9] w-full rounded-2xl object-cover"
+        />
+      ) : bannerImages.length > 0 ? (
+        <BannerSlideshow
+          images={bannerImages}
+          className="aspect-[16/9] rounded-2xl"
+        />
+      ) : (
+        <RestaurantHeader
+          image={headerImage || ""}
+          name={displayName}
+          rating={0}
+        />
+      )}
 
       {isBranchContext && (
         <button

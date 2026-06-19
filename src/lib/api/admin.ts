@@ -15,6 +15,9 @@ import type {
   CreateLinkRequest,
   UpdateLinkRequest,
   ReorderLinksRequest,
+  AdminBranch,
+  UpdateBranchPatchRequest,
+  BannerVideoUploadResponse,
 } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -353,6 +356,60 @@ export async function updateBranchUrl(
 ): Promise<void> {
   const body = { [field]: value } as Record<string, string | null>;
   await authApi.post(`/api/branch/Update?id=${id}`, body, authHeaders(token));
+}
+
+// ─── Branch (admin: list + full update + banner) ─────────────────────────────
+
+export async function listBranches(token: string): Promise<AdminBranch[]> {
+  const { data } = await authApi.get<ApiResponse<AdminBranch[]>>(
+    "/api/branch/List",
+    authHeaders(token)
+  );
+  return unwrap(data) ?? [];
+}
+
+export async function getBranchAdmin(token: string, id: number): Promise<AdminBranch> {
+  const { data } = await authApi.get<ApiResponse<AdminBranch>>(
+    `/api/branch/GetById?id=${id}`,
+    authHeaders(token)
+  );
+  return unwrap(data);
+}
+
+export async function updateBranch(
+  token: string,
+  id: number,
+  body: UpdateBranchPatchRequest
+): Promise<void> {
+  await authApi.post(`/api/branch/Update?id=${id}`, body, authHeaders(token));
+}
+
+export async function uploadBranchImage(
+  token: string,
+  file: File
+): Promise<{ url: string; fileName: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await axios.post<ApiResponse<{ url: string; fileName: string }>>(
+    `${API_BASE_URL}/api/branch/UploadImage`,
+    fd,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return unwrap(res.data);
+}
+
+export async function uploadBannerVideo(
+  token: string,
+  file: File
+): Promise<BannerVideoUploadResponse> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await axios.post<ApiResponse<BannerVideoUploadResponse>>(
+    `${API_BASE_URL}/api/branch/UploadBannerVideo`,
+    fd,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return unwrap(res.data);
 }
 
 // ─── Branding ────────────────────────────────────────────────────────────────
