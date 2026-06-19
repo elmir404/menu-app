@@ -104,7 +104,8 @@ export default function ItemDetailClient({
     }
   };
 
-  // Initial drawer position (set imperatively so React re-renders don't override transform).
+  // Initial drawer position — drawer yuxarıda (progress=0), səhifə açılanda mətn görsənir.
+  // Video oynayanda forward anim drawer-i aşağı-yuxarı tsiklləşdirir.
   useEffect(() => {
     applyProgress(0);
   }, []);
@@ -171,9 +172,9 @@ export default function ItemDetailClient({
   // Poster atribut server-side generator olunan ilk frame-i göstərir,
   // əvvəlki force-play-then-pause hack-ə ehtiyac yox.
 
-  // Forward drawer animation: when video starts playing, drawer slides HALF -> PEEK
-  // over DRAWER_ANIM_S seconds, independent of video length. Stops on pause/end/drag/rewind.
-  const forwardAnimRef = useRef<{ startMs: number; startProgress: number } | null>(null);
+  // Drawer animation while video plays: PEEK (progress=1, gizli) -> HALF (progress=0, açıq)
+  // -> PEEK -> HALF cycle. Hər ayağ DRAWER_ANIM_S saniyə.
+  const forwardAnimRef = useRef<{ startMs: number; startProgress: number; direction: -1 | 1 } | null>(null);
   useEffect(() => {
     if (!hasVideo) return;
     const video = videoRef.current;
@@ -187,12 +188,20 @@ export default function ItemDetailClient({
         !video.paused &&
         !video.ended
       ) {
-        const { startMs, startProgress } = forwardAnimRef.current;
+        const { startMs, startProgress, direction } = forwardAnimRef.current;
         const elapsed = (performance.now() - startMs) / 1000;
-        const next = Math.min(1, startProgress + elapsed / DRAWER_ANIM_S);
+        const next = Math.max(
+          0,
+          Math.min(1, startProgress + direction * (elapsed / DRAWER_ANIM_S))
+        );
         applyProgress(next);
-        if (next >= 1) {
-          forwardAnimRef.current = null;
+        // Sərhədə çatdıqda istiqaməti çevir — drawer aşağı-yuxarı tsiklləşir.
+        if ((direction === -1 && next <= 0) || (direction === 1 && next >= 1)) {
+          forwardAnimRef.current = {
+            startMs: performance.now(),
+            startProgress: next,
+            direction: (direction * -1) as -1 | 1,
+          };
         }
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -210,9 +219,11 @@ export default function ItemDetailClient({
     const video = videoRef.current;
     if (!video) return;
     const onPlay = () => {
+      // Video başlayanda drawer əvvəlcə aşağı düşür (2s), sonra yuxarı qalxır (2s) və tsikllənir.
       forwardAnimRef.current = {
         startMs: performance.now(),
         startProgress: progressRef.current,
+        direction: 1,
       };
     };
     const onPause = () => { forwardAnimRef.current = null; };
