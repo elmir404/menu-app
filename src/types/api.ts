@@ -160,6 +160,7 @@ export interface PublicMenuItem {
   prepTimeMinutes: string;
   imageUrls: string[];
   ingredientVideoUrl: string | null;
+  ingredientVideoPosterUrl: string | null;
 }
 
 export interface PublicMenuCategory {

@@ -114,8 +114,9 @@ export default function ItemDetailClient({
     if (!hasVideo) return;
     const video = videoRef.current;
     if (!video) return;
-    const CAPTURE_INTERVAL_MS = 60;
-    const TARGET_W = 360;
+    const CAPTURE_INTERVAL_MS = 33;
+    const TARGET_W = 720;
+    const MAX_FRAMES = 600;
 
     const captureFrame = async () => {
       if (video.paused || video.ended) return;
@@ -127,9 +128,14 @@ export default function ItemDetailClient({
         const bmp = await createImageBitmap(video, {
           resizeWidth: w,
           resizeHeight: h,
-          resizeQuality: "low",
+          resizeQuality: "high",
         });
         framesRef.current.push(bmp);
+        // Memory bound: ~20s buffer @ 30 fps. Köhnəni at ki, qaz axmasın.
+        while (framesRef.current.length > MAX_FRAMES) {
+          const oldest = framesRef.current.shift();
+          try { oldest?.close?.(); } catch { /* ignore */ }
+        }
       } catch { /* ignore */ }
     };
 
@@ -162,27 +168,8 @@ export default function ItemDetailClient({
     };
   }, [hasVideo]);
 
-  // Force the first video frame to render (instead of black/poster) by briefly playing then pausing.
-  useEffect(() => {
-    if (!hasVideo) return;
-    const video = videoRef.current;
-    if (!video) return;
-    const onLoaded = () => {
-      try { video.currentTime = 0; } catch { /* ignore */ }
-      const p = video.play();
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          try { video.pause(); video.currentTime = 0; } catch { /* ignore */ }
-        }).catch(() => { /* autoplay blocked */ });
-      }
-    };
-    if (video.readyState >= 2) {
-      onLoaded();
-    } else {
-      video.addEventListener("loadeddata", onLoaded, { once: true });
-      return () => video.removeEventListener("loadeddata", onLoaded);
-    }
-  }, [hasVideo]);
+  // Poster atribut server-side generator olunan ilk frame-i göstərir,
+  // əvvəlki force-play-then-pause hack-ə ehtiyac yox.
 
   // Forward drawer animation: when video starts playing, drawer slides HALF -> PEEK
   // over DRAWER_ANIM_S seconds, independent of video length. Stops on pause/end/drag/rewind.
@@ -378,9 +365,10 @@ export default function ItemDetailClient({
           <video
             ref={videoRef}
             src={item.ingredientVideoUrl!}
+            poster={item.ingredientVideoPosterUrl ?? undefined}
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             onClick={handleVideoTap}
             onPlay={() => { setPlaying(true); setEnded(false); }}
             onPause={() => setPlaying(false)}
