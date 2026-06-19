@@ -20,7 +20,7 @@ interface Props {
 // translateY(30dvh) -> drawer is at bottom 10% (PEEK state).
 // progress 0..1 maps to translateY 0..30dvh; drawer animation runs over a fixed duration.
 const TRANSLATE_RANGE_VH = 30;
-const DRAWER_ANIM_S = 3;
+const DRAWER_ANIM_S = 2;
 
 export default function ItemDetailClient({
   locale,
