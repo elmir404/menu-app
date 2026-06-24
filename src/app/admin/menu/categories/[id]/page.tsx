@@ -17,6 +17,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LanguageTabs } from "@/components/admin/LanguageTabs";
+import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import {
+  scopeToBranchId,
+  type BranchScope,
+} from "@/contexts/BranchScopeContext";
 
 const schema = z.object({
   azName: z.string().min(1, "AZ ad tələb olunur"),
@@ -35,6 +40,7 @@ export default function CategoryUpdatePage() {
   const id = params?.id ? Number(params.id) : undefined;
   const { data: category, isLoading, isError } = useCategoryById(id);
   const updateMutation = useUpdateCategory();
+  const [branchScope, setBranchScope] = useState<BranchScope>("none");
 
   const {
     register,
@@ -55,6 +61,7 @@ export default function CategoryUpdatePage() {
       enDescription: category.enDescription ?? "",
       ruDescription: category.ruDescription ?? "",
     });
+    setBranchScope(category.branchId == null ? "none" : category.branchId);
   }, [category, reset]);
 
   const onSubmit = async (formData: FormData) => {
@@ -69,6 +76,7 @@ export default function CategoryUpdatePage() {
         azDescription: formData.azDescription?.trim() || undefined,
         enDescription: formData.enDescription?.trim() || undefined,
         ruDescription: formData.ruDescription?.trim() || undefined,
+        branchId: scopeToBranchId(branchScope),
       });
       toast.success("Kateqoriya uğurla yeniləndi");
       router.push("/admin/menu/categories");
@@ -122,6 +130,15 @@ export default function CategoryUpdatePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label>Filial</Label>
+              <BranchScopeSelect
+                className="w-full sm:w-[260px]"
+                value={branchScope}
+                onChange={setBranchScope}
+              />
+            </div>
+
             <LanguageTabs
               azContent={
                 <>

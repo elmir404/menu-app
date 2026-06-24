@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
@@ -23,6 +23,24 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LanguageTabs } from "@/components/admin/LanguageTabs";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import {
+  useBranchScope,
+  scopeToBranchId,
+  type BranchScope,
+} from "@/contexts/BranchScopeContext";
+import type { AdminMenuCategory } from "@/types/api";
+
+// Filiala uyğun kateqoriyalar: konkret filial → o filial + Ümumi(null); Ümumi → yalnız null
+function categoriesForScope(
+  categories: AdminMenuCategory[],
+  scope: BranchScope
+): AdminMenuCategory[] {
+  if (scope === "none" || scope === "all") {
+    return categories.filter((c) => c.branchId == null);
+  }
+  return categories.filter((c) => c.branchId == null || c.branchId === scope);
+}
 
 const schema = z.object({
   azName: z.string().min(1, "AZ ad tələb olunur"),
@@ -46,18 +64,28 @@ export default function NewMenuItemPage() {
   const { data: session } = useSession();
   const { data: categories } = useCategories();
   const addMutation = useAddMenuItem();
+  const { scope } = useBranchScope();
   const [files, setFiles] = useState<File[]>([]);
   const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
+  const [branchScope, setBranchScope] = useState<BranchScope>(
+    scope === "all" ? "none" : scope
+  );
 
   const tenantId = session?.tenantId ?? 0;
-  const tenantCategories = (categories ?? []).filter(
-    (c) => c.tenantId === tenantId
+  const tenantCategories = useMemo(
+    () => (categories ?? []).filter((c) => c.tenantId === tenantId),
+    [categories, tenantId]
+  );
+  const scopedCategories = useMemo(
+    () => categoriesForScope(tenantCategories, branchScope),
+    [tenantCategories, branchScope]
   );
 
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -67,6 +95,8 @@ export default function NewMenuItemPage() {
       discountPrice: 0,
     },
   });
+
+  const watchCategoryId = watch("menuCategoryId");
 
   const onSubmit = async (formData: FormData) => {
     // FormData yarat və bütün sahələri əlavə et
@@ -97,6 +127,10 @@ export default function NewMenuItemPage() {
     fd.append("price", formData.price.toFixed(2)); // 12.50 formatında
     fd.append("discountPrice", String(formData.discountPrice || 0));
     fd.append("menuCategoryId", String(formData.menuCategoryId));
+
+    // branchId yalnız konkret filial seçildikdə göndərilir; null = Ümumi (tenant-wide)
+    const branchId = scopeToBranchId(branchScope);
+    if (branchId != null) fd.append("branchId", String(branchId));
 
     // Şəkilləri əlavə et (multiple files)
     files.forEach((file) => {
@@ -186,17 +220,34 @@ export default function NewMenuItemPage() {
             <CardTitle>Qiymət və kateqoriya</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Filial</Label>
+              <BranchScopeSelect
+                className="w-full sm:w-[260px]"
+                value={branchScope}
+                onChange={(s) => {
+                  setBranchScope(s);
+                  setValue("menuCategoryId", 0); // filial dəyişdi → kateqoriyanı yenidən seç
+                }}
+              />
+              <p className="text-xs text-stone-500">
+                &quot;Ümumi&quot; bütün filiallarda görünür.
+              </p>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Kateqoriya</Label>
                 <Select
+                  value={
+                    watchCategoryId ? String(watchCategoryId) : ""
+                  }
                   onValueChange={(val) => setValue("menuCategoryId", Number(val))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Kateqoriya seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tenantCategories.map((cat) => (
+                    {scopedCategories.map((cat) => (
                       <SelectItem key={cat.id} value={String(cat.id)}>
                         {cat.azName}
                       </SelectItem>

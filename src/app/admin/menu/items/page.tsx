@@ -29,6 +29,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import {
+  useBranchScope,
+  matchesBranchScope,
+  scopeToBranchId,
+} from "@/contexts/BranchScopeContext";
 import { getMediaUrl } from "@/lib/api/client";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 import { GripVertical } from "lucide-react";
@@ -55,12 +61,14 @@ function SortableRow({
   item,
   thumb,
   categoryName,
+  branchName,
   onDelete,
   draggable,
 }: {
   item: AdminMenuItem;
   thumb: string | null;
   categoryName: string;
+  branchName: string;
   onDelete: (id: number) => void;
   draggable: boolean;
 }) {
@@ -109,6 +117,11 @@ function SortableRow({
         )}
       </TableCell>
       <TableCell>{categoryName}</TableCell>
+      <TableCell>
+        <span className="inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+          {branchName}
+        </span>
+      </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-1">
           <Button variant="ghost" size="sm" asChild title="Yenilə">
@@ -135,6 +148,7 @@ export default function MenuItemsPage() {
   const { data: categories } = useCategories();
   const deleteMutation = useDeleteMenuItem();
   const reorderMutation = useReorderMenuItems();
+  const { scope, setScope, locked } = useBranchScope();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -163,6 +177,7 @@ export default function MenuItemsPage() {
             ? true
             : tenantCategoryIds.has(item.menuCategoryId)
         )
+        .filter((item) => matchesBranchScope(item.branchId, scope))
         .filter(
           (item) =>
             item.azName.toLowerCase().includes(search.toLowerCase()) ||
@@ -173,22 +188,24 @@ export default function MenuItemsPage() {
             ? true
             : item.menuCategoryId === Number(categoryFilter)
         ),
-    [menuItems, tenantCategoryIds, search, categoryFilter]
+    [menuItems, tenantCategoryIds, scope, search, categoryFilter]
   );
 
   useEffect(() => {
     setItems(filtered);
   }, [filtered]);
 
-  // Drag yalnız tək kateqoriya filteri seçildikdə aktiv ("Hamısı" üçün cross-cat
-  // drag-reorder backend tərəfindən qadağandır, ona görə UI də disable edir).
-  const dragEnabled = categoryFilter !== "all";
+  // Drag yalnız tək kateqoriya VƏ tək filial scope seçildikdə aktiv (qarışıq
+  // kateqoriya/filial üzrə cross-reorder backend tərəfindən qadağandır).
+  const dragEnabled = categoryFilter !== "all" && scope !== "all";
   const activeCategoryId = dragEnabled ? Number(categoryFilter) : null;
 
   const getCategoryName = (categoryId: number) => {
     const cat = tenantCategories.find((c) => c.id === categoryId);
     return cat?.azName || "-";
   };
+
+  const getBranchName = (item: AdminMenuItem) => item.branchName ?? "Ümumi";
 
   const handleDelete = async () => {
     if (deleteId === null) return;
@@ -217,6 +234,7 @@ export default function MenuItemsPage() {
     try {
       await reorderMutation.mutateAsync({
         tenantId,
+        branchId: scopeToBranchId(scope),
         menuCategoryId: activeCategoryId,
         items: next.map((i, idx) => ({ id: i.id, sortOrder: idx })),
       });
@@ -245,6 +263,12 @@ export default function MenuItemsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
+        />
+        <BranchScopeSelect
+          value={scope}
+          onChange={setScope}
+          includeAll
+          disabled={locked}
         />
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[200px]">
@@ -282,13 +306,14 @@ export default function MenuItemsPage() {
                 <TableHead>Ad (AZ)</TableHead>
                 <TableHead>Qiymət</TableHead>
                 <TableHead>Kateqoriya</TableHead>
+                <TableHead>Filial</TableHead>
                 <TableHead className="text-right">Əməliyyat</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-stone-500">
+                  <TableCell colSpan={7} className="text-center text-stone-500">
                     Item tapılmadı
                   </TableCell>
                 </TableRow>
@@ -312,6 +337,7 @@ export default function MenuItemsPage() {
                           item={item}
                           thumb={thumb}
                           categoryName={getCategoryName(item.menuCategoryId)}
+                          branchName={getBranchName(item)}
                           onDelete={setDeleteId}
                           draggable={dragEnabled}
                         />

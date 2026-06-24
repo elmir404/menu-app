@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
@@ -13,6 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LanguageTabs } from "@/components/admin/LanguageTabs";
+import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import {
+  useBranchScope,
+  scopeToBranchId,
+  type BranchScope,
+} from "@/contexts/BranchScopeContext";
 
 const schema = z.object({
   azName: z.string().min(1, "AZ ad tələb olunur"),
@@ -29,6 +36,10 @@ export default function NewCategoryPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const addMutation = useAddCategory();
+  const { scope } = useBranchScope();
+  const [branchScope, setBranchScope] = useState<BranchScope>(
+    scope === "all" ? "none" : scope
+  );
 
   const {
     register,
@@ -49,6 +60,7 @@ export default function NewCategoryPage() {
       await addMutation.mutateAsync({
         ...formData,
         tenantId,
+        branchId: scopeToBranchId(branchScope),
       });
       toast.success("Kateqoriya əlavə edildi");
       router.push("/admin/menu/categories");
@@ -67,6 +79,18 @@ export default function NewCategoryPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label>Filial</Label>
+              <BranchScopeSelect
+                className="w-full sm:w-[260px]"
+                value={branchScope}
+                onChange={setBranchScope}
+              />
+              <p className="text-xs text-stone-500">
+                &quot;Ümumi&quot; bütün filiallarda görünür.
+              </p>
+            </div>
+
             <LanguageTabs
               azContent={
                 <>

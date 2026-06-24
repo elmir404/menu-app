@@ -4,6 +4,7 @@ import { SessionProvider } from "@/components/providers/SessionProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { BranchScopeProvider } from "@/contexts/BranchScopeContext";
 
 export const metadata = {
   title: "Admin Panel",
@@ -19,6 +20,7 @@ export default function AdminLayout({
       <body className="min-h-screen bg-stone-50 antialiased">
         <SessionProvider>
           <QueryProvider>
+            <BranchScopeProvider>
             <SidebarProvider>
               <div className="flex min-h-screen w-full">
                 <AdminSidebar />
@@ -29,6 +31,7 @@ export default function AdminLayout({
                 </main>
               </div>
             </SidebarProvider>
+            </BranchScopeProvider>
             <Toaster richColors position="top-right" />
           </QueryProvider>
         </SessionProvider>

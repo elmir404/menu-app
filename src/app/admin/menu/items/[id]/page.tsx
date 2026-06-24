@@ -27,8 +27,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LanguageTabs } from "@/components/admin/LanguageTabs";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import {
+  scopeToBranchId,
+  type BranchScope,
+} from "@/contexts/BranchScopeContext";
 import { getMediaUrl } from "@/lib/api/client";
 import { FiX } from "react-icons/fi";
+import type { AdminMenuCategory } from "@/types/api";
+
+// Filiala uyğun kateqoriyalar: konkret filial → o filial + Ümumi(null); Ümumi → yalnız null
+function categoriesForScope(
+  categories: AdminMenuCategory[],
+  scope: BranchScope
+): AdminMenuCategory[] {
+  if (scope === "none" || scope === "all") {
+    return categories.filter((c) => c.branchId == null);
+  }
+  return categories.filter((c) => c.branchId == null || c.branchId === scope);
+}
 
 const schema = z.object({
   azName: z.string().min(1, "AZ ad tələb olunur"),
@@ -61,11 +78,13 @@ export default function MenuItemUpdatePage() {
   );
   const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
   const [removeVideo, setRemoveVideo] = useState(false);
+  const [branchScope, setBranchScope] = useState<BranchScope>("none");
 
   const tenantId = session?.tenantId ?? 0;
   const tenantCategories = (categories ?? []).filter(
     (c) => c.tenantId === tenantId
   );
+  const scopedCategories = categoriesForScope(tenantCategories, branchScope);
 
   const {
     register,
@@ -99,6 +118,7 @@ export default function MenuItemUpdatePage() {
       prepTimeMinutes: menuItem.prepTimeMinutes ?? "",
       menuCategoryId: menuItem.menuCategoryId ?? 0,
     });
+    setBranchScope(menuItem.branchId == null ? "none" : menuItem.branchId);
     if (menuItem.menuItemImages?.length) {
       setExistingImageIds(
         new Set(menuItem.menuItemImages.map((img) => img.id))
@@ -132,6 +152,10 @@ export default function MenuItemUpdatePage() {
     fd.append("price", formData.price.toFixed(2));
     fd.append("discountPrice", String(formData.discountPrice || 0));
     fd.append("menuCategoryId", String(formData.menuCategoryId));
+
+    // branchId yalnız konkret filial seçildikdə göndərilir; null = Ümumi (tenant-wide)
+    const branchId = scopeToBranchId(branchScope);
+    if (branchId != null) fd.append("branchId", String(branchId));
 
     newFiles.forEach((file) => {
       fd.append("files", file);
@@ -280,6 +304,20 @@ export default function MenuItemUpdatePage() {
             <CardTitle>Qiymət və kateqoriya</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Filial</Label>
+              <BranchScopeSelect
+                className="w-full sm:w-[260px]"
+                value={branchScope}
+                onChange={(s) => {
+                  setBranchScope(s);
+                  setValue("menuCategoryId", 0); // filial dəyişdi → kateqoriyanı yenidən seç
+                }}
+              />
+              <p className="text-xs text-stone-500">
+                &quot;Ümumi&quot; bütün filiallarda görünür.
+              </p>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Kateqoriya</Label>
@@ -291,7 +329,7 @@ export default function MenuItemUpdatePage() {
                     <SelectValue placeholder="Kateqoriya seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tenantCategories.map((cat) => (
+                    {scopedCategories.map((cat) => (
                       <SelectItem key={cat.id} value={String(cat.id)}>
                         {cat.azName}
                       </SelectItem>

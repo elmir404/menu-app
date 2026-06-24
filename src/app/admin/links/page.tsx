@@ -51,6 +51,12 @@ import {
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { BranchSocialLinksSection } from "@/components/admin/BranchSocialLinksSection";
+import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import {
+  useBranchScope,
+  matchesBranchScope,
+  scopeToBranchId,
+} from "@/contexts/BranchScopeContext";
 import { LinkIcon, ICON_OPTIONS, type IconKey } from "@/components/LinkIcon";
 import { FiEdit2, FiPlus, FiTrash2, FiLink, FiMenu } from "react-icons/fi";
 import type { TenantLink } from "@/types/api";
@@ -62,6 +68,7 @@ const linkSchema = z.object({
   url: z.string().min(1, "URL tələb olunur"),
   iconKey: z.string().min(1, "İkon seçin"),
   openInNewTab: z.boolean(),
+  branchId: z.number().nullable().optional(),
 });
 
 type LinkFormData = z.infer<typeof linkSchema>;
@@ -69,6 +76,7 @@ type LinkFormData = z.infer<typeof linkSchema>;
 export default function LinksPage() {
   const { data: session } = useSession();
   const tenantId = session?.tenantId ?? 0;
+  const { scope, setScope, locked } = useBranchScope();
   const { data: linksData, isLoading } = useLinks();
   const addMutation = useAddLink();
   const updateMutation = useUpdateLink();
@@ -82,11 +90,17 @@ export default function LinksPage() {
 
   useEffect(() => {
     setItems(
-      [...(linksData ?? [])].sort((a, b) => a.sortOrder - b.sortOrder)
+      [...(linksData ?? [])]
+        .filter((l) => matchesBranchScope(l.branchId, scope))
+        .sort((a, b) => a.sortOrder - b.sortOrder)
     );
-  }, [linksData]);
+  }, [linksData, scope]);
 
   const ids = useMemo(() => items.map((i) => i.id), [items]);
+
+  // Reorder yalnız "Bütün filiallar" scope-unda (link reorder tenant-wide-dır;
+  // filtrlənmiş alt-siyahını sıralamaq sortOrder-i pozar).
+  const dragEnabled = scope === "all";
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -104,6 +118,7 @@ export default function LinksPage() {
       url: "",
       iconKey: "link",
       openInNewTab: true,
+      branchId: null,
     },
   });
 
@@ -115,6 +130,7 @@ export default function LinksPage() {
     try {
       await addMutation.mutateAsync({
         tenantId,
+        branchId: data.branchId ?? null,
         azTitle: data.azTitle,
         enTitle: data.enTitle || null,
         ruTitle: data.ruTitle || null,
@@ -137,6 +153,7 @@ export default function LinksPage() {
       await updateMutation.mutateAsync({
         id: editItem.id,
         tenantId,
+        branchId: data.branchId ?? null,
         azTitle: data.azTitle,
         enTitle: data.enTitle || null,
         ruTitle: data.ruTitle || null,
@@ -173,12 +190,13 @@ export default function LinksPage() {
       url: link.url,
       iconKey: link.iconKey ?? "link",
       openInNewTab: link.openInNewTab,
+      branchId: link.branchId ?? null,
     });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id || !dragEnabled) return;
 
     const oldIndex = items.findIndex((i) => i.id === active.id);
     const newIndex = items.findIndex((i) => i.id === over.id);
@@ -210,10 +228,29 @@ export default function LinksPage() {
             Restoran səhifəsində göstəriləcək linklər. Sürükləyərək sıralayın.
           </p>
         </div>
-        <Button onClick={() => setShowAdd(true)}>
+        <Button
+          onClick={() => {
+            addForm.setValue("branchId", scopeToBranchId(scope));
+            setShowAdd(true);
+          }}
+        >
           <FiPlus className="mr-2" />
           Yeni link
         </Button>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <BranchScopeSelect
+          value={scope}
+          onChange={setScope}
+          includeAll
+          disabled={locked}
+        />
+        {!dragEnabled && (
+          <p className="self-center text-xs text-stone-500">
+            Sıralamaq üçün &quot;Bütün filiallar&quot; seçin
+          </p>
+        )}
       </div>
 
       {isLoading ? (
@@ -334,6 +371,9 @@ function SortableRow({
           </p>
           <p className="truncate text-xs text-stone-500">{link.url}</p>
         </div>
+        <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+          {link.branchName ?? "Ümumi"}
+        </span>
         <Button variant="ghost" size="sm" onClick={onEdit}>
           <FiEdit2 className="text-stone-500" />
         </Button>
@@ -360,9 +400,21 @@ function LinkForm({
 }) {
   const iconKey = form.watch("iconKey");
   const openInNewTab = form.watch("openInNewTab");
+  const branchId = form.watch("branchId");
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Filial</Label>
+        <BranchScopeSelect
+          className="w-full"
+          value={branchId == null ? "none" : branchId}
+          onChange={(s) =>
+            form.setValue("branchId", typeof s === "number" ? s : null)
+          }
+        />
+      </div>
+
       <div className="space-y-2">
         <Label>İkon</Label>
         <Select

@@ -220,6 +220,7 @@ export interface AdminMenuCategory {
   tenantId: number;
   sortOrder: number;
   branchId?: number | null;
+  branchName?: string | null;
   menuItems: AdminMenuItem[] | null;
 }
 
@@ -231,6 +232,7 @@ export interface CreateMenuCategoryRequest {
   enDescription?: string;
   ruDescription?: string;
   tenantId: number;
+  branchId?: number | null;
 }
 
 export interface UpdateMenuCategoryRequest {
@@ -241,6 +243,7 @@ export interface UpdateMenuCategoryRequest {
   azDescription?: string;
   enDescription?: string;
   ruDescription?: string;
+  branchId?: number | null;
 }
 
 // ─── Admin: Menu Item ────────────────────────────────────────────────────────
@@ -270,6 +273,7 @@ export interface AdminMenuItem {
   ingredientVideoUrl: string | null;
   sortOrder: number;
   branchId?: number | null;
+  branchName?: string | null;
 }
 
 export interface CreateMenuItemRequest {
