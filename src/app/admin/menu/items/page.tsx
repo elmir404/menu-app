@@ -55,7 +55,18 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { AdminMenuItem } from "@/types/api";
+import type { AdminMenuItem, AdminMenuCategory } from "@/types/api";
+import type { BranchScope } from "@/contexts/BranchScopeContext";
+
+// Filiala uyğun kateqoriyalar: konkret filial → o filial + Ümumi(null); Ümumi/Hamısı → null
+function categoriesForScope(
+  categories: AdminMenuCategory[],
+  scope: BranchScope
+): AdminMenuCategory[] {
+  if (scope === "none") return categories.filter((c) => c.branchId == null);
+  if (scope === "all") return categories;
+  return categories.filter((c) => c.branchId == null || c.branchId === scope);
+}
 
 function SortableRow({
   item,
@@ -168,6 +179,21 @@ export default function MenuItemsPage() {
     () => new Set(tenantCategories.map((c) => c.id)),
     [tenantCategories]
   );
+  // Kateqoriya filter dropdownu seçilmiş filiala uyğun süzülür (o filial + Ümumi)
+  const scopedCategories = useMemo(
+    () => categoriesForScope(tenantCategories, scope),
+    [tenantCategories, scope]
+  );
+
+  // Filial dəyişəndə seçili kateqoriya artıq scope-da yoxdursa filteri sıfırla
+  useEffect(() => {
+    if (
+      categoryFilter !== "all" &&
+      !scopedCategories.some((c) => String(c.id) === categoryFilter)
+    ) {
+      setCategoryFilter("all");
+    }
+  }, [scopedCategories, categoryFilter]);
 
   const filtered = useMemo(
     () =>
@@ -276,7 +302,7 @@ export default function MenuItemsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Hamısı (sıralama deaktiv)</SelectItem>
-            {tenantCategories.map((cat) => (
+            {scopedCategories.map((cat) => (
               <SelectItem key={cat.id} value={String(cat.id)}>
                 {cat.azName}
               </SelectItem>
