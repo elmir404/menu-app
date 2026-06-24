@@ -55,18 +55,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { AdminMenuItem, AdminMenuCategory } from "@/types/api";
-import type { BranchScope } from "@/contexts/BranchScopeContext";
-
-// Filiala uyğun kateqoriyalar: konkret filial → o filial + Ümumi(null); Ümumi/Hamısı → null
-function categoriesForScope(
-  categories: AdminMenuCategory[],
-  scope: BranchScope
-): AdminMenuCategory[] {
-  if (scope === "none") return categories.filter((c) => c.branchId == null);
-  if (scope === "all") return categories;
-  return categories.filter((c) => c.branchId == null || c.branchId === scope);
-}
+import type { AdminMenuItem } from "@/types/api";
 
 function SortableRow({
   item,
@@ -179,10 +168,22 @@ export default function MenuItemsPage() {
     () => new Set(tenantCategories.map((c) => c.id)),
     [tenantCategories]
   );
-  // Kateqoriya filter dropdownu seçilmiş filiala uyğun süzülür (o filial + Ümumi)
+
+  // Seçilmiş filialın item-lərinin aid olduğu kateqoriyalar (kateqoriya Ümumi olsa da
+  // həmin filialda item varsa görünür). Filial dəyişəndə dropdown dəyişir.
+  const scopedCategoryIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const item of menuItems ?? []) {
+      if (tenantCategoryIds.size > 0 && !tenantCategoryIds.has(item.menuCategoryId))
+        continue;
+      if (matchesBranchScope(item.branchId, scope)) ids.add(item.menuCategoryId);
+    }
+    return ids;
+  }, [menuItems, tenantCategoryIds, scope]);
+
   const scopedCategories = useMemo(
-    () => categoriesForScope(tenantCategories, scope),
-    [tenantCategories, scope]
+    () => tenantCategories.filter((c) => scopedCategoryIds.has(c.id)),
+    [tenantCategories, scopedCategoryIds]
   );
 
   // Filial dəyişəndə seçili kateqoriya artıq scope-da yoxdursa filteri sıfırla
