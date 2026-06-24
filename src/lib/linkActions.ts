@@ -93,6 +93,12 @@ export function buildActionHref(action: LinkAction): string {
   const v = (action.value ?? "").trim();
   switch (action.kind) {
     case "whatsapp": {
+      // Tam URL yapışdırılıbsa olduğu kimi saxla (əks halda query param rəqəmləri
+      // nömrəyə yapışır, məs. app_absent=0 → sonda artıq sıfır).
+      if (/^https?:\/\//i.test(v) || /wa\.me|whatsapp\.com/i.test(v)) {
+        const m = v.match(/[?&]phone=(\d+)/i);
+        return m ? `https://wa.me/${m[1]}` : v;
+      }
       const digits = v.replace(/[^\d]/g, "");
       return `https://wa.me/${digits}`;
     }
