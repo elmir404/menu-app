@@ -15,6 +15,17 @@ import { useDictionary } from "@/components/providers/LocaleProvider";
 import { useTenant } from "@/components/providers/TenantProvider";
 import type { PublicRestaurantLink, RestaurantPublic } from "@/types/api";
 import { getMediaUrl } from "@/lib/api/client";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  buildActionHref,
+  actionLabel,
+  actionIconKey,
+} from "@/lib/linkActions";
 
 interface RestaurantPageClientProps {
   locale: string;
@@ -43,6 +54,7 @@ export default function RestaurantPageClient({
   const [restaurant, setRestaurant] = useState<RestaurantPublic | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [activeLink, setActiveLink] = useState<PublicRestaurantLink | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -321,8 +333,8 @@ export default function RestaurantPageClient({
         <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {links.map((link) => {
             const title = pickTitle(link, locale);
-            const internal = isInternalLink(link.url);
             const brandColor = getIconBrandColor(link.iconKey);
+            const actions = link.actions ?? [];
 
             const cardClass =
               "group flex items-center gap-4 rounded-2xl bg-white px-4 py-4 " +
@@ -347,9 +359,25 @@ export default function RestaurantPageClient({
               </>
             );
 
-            if (internal) {
+            // Çoxseçimli: 2+ aksiya → popup; 1 aksiya → birbaşa aç; 0 → url
+            if (actions.length >= 2) {
               return (
-                <Link key={link.id} href={link.url} className={cardClass}>
+                <button
+                  key={link.id}
+                  type="button"
+                  onClick={() => setActiveLink(link)}
+                  className={`${cardClass} w-full text-left`}
+                >
+                  {inner}
+                </button>
+              );
+            }
+
+            const href = actions.length === 1 ? buildActionHref(actions[0]) : link.url;
+
+            if (isInternalLink(href)) {
+              return (
+                <Link key={link.id} href={href} className={cardClass}>
                   {inner}
                 </Link>
               );
@@ -358,7 +386,7 @@ export default function RestaurantPageClient({
             return (
               <a
                 key={link.id}
-                href={link.url}
+                href={href}
                 target={link.openInNewTab ? "_blank" : undefined}
                 rel={link.openInNewTab ? "noreferrer" : undefined}
                 className={cardClass}
@@ -369,6 +397,49 @@ export default function RestaurantPageClient({
           })}
         </section>
       )}
+
+      {/* Çoxseçimli link popup (action sheet) */}
+      <Sheet
+        open={activeLink !== null}
+        onOpenChange={(o) => !o && setActiveLink(null)}
+      >
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle>{activeLink ? pickTitle(activeLink, locale) : ""}</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-2 px-4 pb-6">
+            {(activeLink?.actions ?? []).map((action, i) => {
+              const brand = getIconBrandColor(actionIconKey(action.kind));
+              return (
+                <a
+                  key={i}
+                  href={buildActionHref(action)}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setActiveLink(null)}
+                  className="flex items-center gap-3 rounded-xl bg-stone-50 px-4 py-3 transition-colors hover:bg-stone-100"
+                >
+                  <span
+                    className="flex shrink-0 items-center justify-center rounded-full text-white"
+                    style={{ backgroundColor: brand, width: 40, height: 40 }}
+                    aria-hidden="true"
+                  >
+                    <LinkIcon iconKey={actionIconKey(action.kind)} className="text-lg" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-stone-900">
+                      {actionLabel(action, locale)}
+                    </span>
+                    <span className="block truncate text-xs text-stone-500">
+                      {action.value}
+                    </span>
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* WiFi Information */}
       {wifiList.length > 0 && (

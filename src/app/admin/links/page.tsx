@@ -60,16 +60,42 @@ import {
 import { LinkIcon, ICON_OPTIONS, type IconKey } from "@/components/LinkIcon";
 import { FiEdit2, FiPlus, FiTrash2, FiLink, FiMenu } from "react-icons/fi";
 import type { TenantLink } from "@/types/api";
+import { ACTION_KINDS, type LinkActionKind } from "@/lib/linkActions";
 
-const linkSchema = z.object({
-  azTitle: z.string().min(1, "Az başlıq tələb olunur"),
-  enTitle: z.string().optional(),
-  ruTitle: z.string().optional(),
-  url: z.string().min(1, "URL tələb olunur"),
-  iconKey: z.string().min(1, "İkon seçin"),
-  openInNewTab: z.boolean(),
-  branchId: z.number().nullable().optional(),
-});
+const actionKindEnum = z.enum([
+  "whatsapp",
+  "call",
+  "sms",
+  "telegram",
+  "email",
+  "link",
+]);
+
+const linkSchema = z
+  .object({
+    azTitle: z.string().min(1, "Az başlıq tələb olunur"),
+    enTitle: z.string().optional(),
+    ruTitle: z.string().optional(),
+    url: z.string().optional(),
+    iconKey: z.string().min(1, "İkon seçin"),
+    openInNewTab: z.boolean(),
+    branchId: z.number().nullable().optional(),
+    actions: z
+      .array(
+        z.object({
+          kind: actionKindEnum,
+          value: z.string().min(1, "Dəyər tələb olunur"),
+          label: z.string().optional().nullable(),
+        })
+      )
+      .optional(),
+  })
+  .refine(
+    (d) =>
+      (d.actions && d.actions.length > 0) ||
+      (!!d.url && d.url.trim().length > 0),
+    { message: "URL və ya ən azı bir aksiya lazımdır", path: ["url"] }
+  );
 
 type LinkFormData = z.infer<typeof linkSchema>;
 
@@ -119,6 +145,7 @@ export default function LinksPage() {
       iconKey: "link",
       openInNewTab: true,
       branchId: null,
+      actions: [],
     },
   });
 
@@ -134,10 +161,11 @@ export default function LinksPage() {
         azTitle: data.azTitle,
         enTitle: data.enTitle || null,
         ruTitle: data.ruTitle || null,
-        url: data.url,
+        url: data.url || null,
         iconKey: data.iconKey,
         openInNewTab: data.openInNewTab,
         sortOrder: items.length,
+        actions: data.actions && data.actions.length > 0 ? data.actions : null,
       });
       toast.success("Link əlavə edildi");
       addForm.reset();
@@ -157,11 +185,12 @@ export default function LinksPage() {
         azTitle: data.azTitle,
         enTitle: data.enTitle || null,
         ruTitle: data.ruTitle || null,
-        url: data.url,
+        url: data.url || null,
         iconKey: data.iconKey,
         openInNewTab: data.openInNewTab,
         sortOrder: editItem.sortOrder,
         isActive: editItem.isActive,
+        actions: data.actions && data.actions.length > 0 ? data.actions : null,
       });
       toast.success("Link yeniləndi");
       setEditItem(null);
@@ -187,10 +216,11 @@ export default function LinksPage() {
       azTitle: link.azTitle,
       enTitle: link.enTitle ?? "",
       ruTitle: link.ruTitle ?? "",
-      url: link.url,
+      url: link.url ?? "",
       iconKey: link.iconKey ?? "link",
       openInNewTab: link.openInNewTab,
       branchId: link.branchId ?? null,
+      actions: link.actions ?? [],
     });
   };
 
@@ -369,7 +399,11 @@ function SortableRow({
           <p className="truncate text-sm font-medium text-stone-900">
             {link.azTitle}
           </p>
-          <p className="truncate text-xs text-stone-500">{link.url}</p>
+          <p className="truncate text-xs text-stone-500">
+            {link.actions && link.actions.length > 0
+              ? `${link.actions.length} aksiya (çoxseçimli)`
+              : link.url}
+          </p>
         </div>
         <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
           {link.branchName ?? "Ümumi"}
@@ -401,6 +435,18 @@ function LinkForm({
   const iconKey = form.watch("iconKey");
   const openInNewTab = form.watch("openInNewTab");
   const branchId = form.watch("branchId");
+  const actions = form.watch("actions") ?? [];
+
+  const setActions = (next: LinkFormData["actions"]) =>
+    form.setValue("actions", next, { shouldValidate: true });
+  const addAction = () =>
+    setActions([...actions, { kind: "whatsapp", value: "", label: "" }]);
+  const updateAction = (
+    i: number,
+    patch: Partial<{ kind: LinkActionKind; value: string; label: string }>
+  ) => setActions(actions.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));
+  const removeAction = (i: number) =>
+    setActions(actions.filter((_, idx) => idx !== i));
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -469,6 +515,60 @@ function LinkForm({
             {form.formState.errors.url.message}
           </p>
         )}
+      </div>
+
+      <div className="space-y-2 rounded-lg border border-stone-200 p-3">
+        <div className="flex items-center justify-between">
+          <Label>Aksiyalar (çoxseçimli popup)</Label>
+          <Button type="button" variant="outline" size="sm" onClick={addAction}>
+            <FiPlus className="mr-1" /> Aksiya
+          </Button>
+        </div>
+        <p className="text-xs text-stone-500">
+          Aksiya əlavə etsən, linkə basanda seçim popup-ı açılır (məs. bir neçə
+          WhatsApp nömrəsi, zəng). Bu halda URL boş ola bilər.
+        </p>
+        {actions.map((a, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <Select
+              value={a.kind}
+              onValueChange={(v) =>
+                updateAction(i, { kind: v as LinkActionKind })
+              }
+            >
+              <SelectTrigger className="w-[150px] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTION_KINDS.map((k) => (
+                  <SelectItem key={k.kind} value={k.kind}>
+                    {k.adminLabel}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex-1 space-y-1">
+              <Input
+                value={a.value}
+                onChange={(e) => updateAction(i, { value: e.target.value })}
+                placeholder="nömrə (+99450...) və ya URL"
+              />
+              <Input
+                value={a.label ?? ""}
+                onChange={(e) => updateAction(i, { label: e.target.value })}
+                placeholder="Ad (ixtiyari — boşdursa avtomatik)"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => removeAction(i)}
+            >
+              <FiTrash2 className="text-red-500" />
+            </Button>
+          </div>
+        ))}
       </div>
 
       <label className="flex items-center gap-2 text-sm text-stone-700">

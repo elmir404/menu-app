@@ -1,3 +1,6 @@
+import type { LinkAction } from "@/lib/linkActions";
+export type { LinkAction };
+
 // ─── Generic API response wrapper ────────────────────────────────────────────
 export interface ApiResponse<T> {
   success: boolean;
@@ -93,6 +96,7 @@ export interface PublicRestaurantLink {
   iconKey: string | null;
   sortOrder: number;
   openInNewTab: boolean;
+  actions?: LinkAction[] | null;
 }
 
 export interface RestaurantPublic {
@@ -358,6 +362,7 @@ export interface TenantLink {
   sortOrder: number;
   openInNewTab: boolean;
   isActive: boolean;
+  actions?: LinkAction[] | null;
 }
 
 export interface CreateLinkRequest {
@@ -366,10 +371,11 @@ export interface CreateLinkRequest {
   azTitle: string;
   enTitle?: string | null;
   ruTitle?: string | null;
-  url: string;
+  url?: string | null;
   iconKey?: string | null;
   sortOrder: number;
   openInNewTab: boolean;
+  actions?: LinkAction[] | null;
 }
 
 export interface UpdateLinkRequest extends CreateLinkRequest {
