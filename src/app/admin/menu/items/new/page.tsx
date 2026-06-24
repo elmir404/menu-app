@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useAddMenuItem } from "@/hooks/use-menu-items";
+import { useAddMenuItem, useMenuItems } from "@/hooks/use-menu-items";
 import { useCategories } from "@/hooks/use-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,21 +26,10 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
   useBranchScope,
+  matchesBranchScope,
   scopeToBranchId,
   type BranchScope,
 } from "@/contexts/BranchScopeContext";
-import type { AdminMenuCategory } from "@/types/api";
-
-// Filiala uyğun kateqoriyalar: konkret filial → o filial + Ümumi(null); Ümumi → yalnız null
-function categoriesForScope(
-  categories: AdminMenuCategory[],
-  scope: BranchScope
-): AdminMenuCategory[] {
-  if (scope === "none" || scope === "all") {
-    return categories.filter((c) => c.branchId == null);
-  }
-  return categories.filter((c) => c.branchId == null || c.branchId === scope);
-}
 
 const schema = z.object({
   azName: z.string().min(1, "AZ ad tələb olunur"),
@@ -63,6 +52,7 @@ export default function NewMenuItemPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const { data: categories } = useCategories();
+  const { data: menuItems } = useMenuItems();
   const addMutation = useAddMenuItem();
   const { scope } = useBranchScope();
   const [files, setFiles] = useState<File[]>([]);
@@ -76,10 +66,17 @@ export default function NewMenuItemPage() {
     () => (categories ?? []).filter((c) => c.tenantId === tenantId),
     [categories, tenantId]
   );
-  const scopedCategories = useMemo(
-    () => categoriesForScope(tenantCategories, branchScope),
-    [tenantCategories, branchScope]
-  );
+  // Seçilmiş filialın item-lərinin işlətdiyi kateqoriyalar; filialda item yoxdursa
+  // bütün kateqoriyalar göstərilir ki, yeni item yaratmaq mümkün olsun.
+  const scopedCategories = useMemo(() => {
+    const usedIds = new Set<number>();
+    for (const it of menuItems ?? []) {
+      if (matchesBranchScope(it.branchId, branchScope))
+        usedIds.add(it.menuCategoryId);
+    }
+    const used = tenantCategories.filter((c) => usedIds.has(c.id));
+    return used.length > 0 ? used : tenantCategories;
+  }, [menuItems, tenantCategories, branchScope]);
 
   const {
     register,

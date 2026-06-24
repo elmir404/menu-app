@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import {
   useMenuItemById,
   useUpdateMenuItem,
+  useMenuItems,
 } from "@/hooks/use-menu-items";
 import { useCategories } from "@/hooks/use-categories";
 import { Button } from "@/components/ui/button";
@@ -29,23 +30,12 @@ import { LanguageTabs } from "@/components/admin/LanguageTabs";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
+  matchesBranchScope,
   scopeToBranchId,
   type BranchScope,
 } from "@/contexts/BranchScopeContext";
 import { getMediaUrl } from "@/lib/api/client";
 import { FiX } from "react-icons/fi";
-import type { AdminMenuCategory } from "@/types/api";
-
-// Filiala uyğun kateqoriyalar: konkret filial → o filial + Ümumi(null); Ümumi → yalnız null
-function categoriesForScope(
-  categories: AdminMenuCategory[],
-  scope: BranchScope
-): AdminMenuCategory[] {
-  if (scope === "none" || scope === "all") {
-    return categories.filter((c) => c.branchId == null);
-  }
-  return categories.filter((c) => c.branchId == null || c.branchId === scope);
-}
 
 const schema = z.object({
   azName: z.string().min(1, "AZ ad tələb olunur"),
@@ -71,6 +61,7 @@ export default function MenuItemUpdatePage() {
   const { data: session } = useSession();
   const { data: menuItem, isLoading, isError } = useMenuItemById(id);
   const { data: categories } = useCategories();
+  const { data: menuItems } = useMenuItems();
   const updateMutation = useUpdateMenuItem(id ?? 0);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [existingImageIds, setExistingImageIds] = useState<Set<number>>(
@@ -84,7 +75,18 @@ export default function MenuItemUpdatePage() {
   const tenantCategories = (categories ?? []).filter(
     (c) => c.tenantId === tenantId
   );
-  const scopedCategories = categoriesForScope(tenantCategories, branchScope);
+  // Seçilmiş filialın item-lərinin işlətdiyi kateqoriyalar + cari item-in kateqoriyası
+  // (həmişə seçilə bilsin). Filialda item yoxdursa bütün kateqoriyalar göstərilir.
+  const scopedCategories = (() => {
+    const usedIds = new Set<number>();
+    for (const it of menuItems ?? []) {
+      if (matchesBranchScope(it.branchId, branchScope))
+        usedIds.add(it.menuCategoryId);
+    }
+    if (menuItem?.menuCategoryId) usedIds.add(menuItem.menuCategoryId);
+    const used = tenantCategories.filter((c) => usedIds.has(c.id));
+    return used.length > 0 ? used : tenantCategories;
+  })();
 
   const {
     register,
