@@ -26,7 +26,6 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
   useBranchScope,
-  matchesBranchScope,
   scopeToBranchId,
   type BranchScope,
 } from "@/contexts/BranchScopeContext";
@@ -52,7 +51,6 @@ export default function NewMenuItemPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const { data: categories } = useCategories();
-  const { data: menuItems } = useMenuItems();
   const addMutation = useAddMenuItem();
   const { scope } = useBranchScope();
   const [files, setFiles] = useState<File[]>([]);
@@ -66,17 +64,17 @@ export default function NewMenuItemPage() {
     () => (categories ?? []).filter((c) => c.tenantId === tenantId),
     [categories, tenantId]
   );
-  // Seçilmiş filialın item-lərinin işlətdiyi kateqoriyalar; filialda item yoxdursa
-  // bütün kateqoriyalar göstərilir ki, yeni item yaratmaq mümkün olsun.
-  const scopedCategories = useMemo(() => {
-    const usedIds = new Set<number>();
-    for (const it of menuItems ?? []) {
-      if (matchesBranchScope(it.branchId, branchScope))
-        usedIds.add(it.menuCategoryId);
-    }
-    const used = tenantCategories.filter((c) => usedIds.has(c.id));
-    return used.length > 0 ? used : tenantCategories;
-  }, [menuItems, tenantCategories, branchScope]);
+  // Seçilmiş filialın kateqoriyaları: filial-spesifik (branchId===scope) + Ümumi(null).
+  // Yeni yaradılan filial kateqoriyası dərhal görünür (item olmasa da).
+  const scopedCategories = useMemo(
+    () =>
+      tenantCategories.filter(
+        (c) =>
+          c.branchId == null ||
+          (typeof branchScope === "number" && c.branchId === branchScope)
+      ),
+    [tenantCategories, branchScope]
+  );
 
   const {
     register,

@@ -169,22 +169,23 @@ export default function MenuItemsPage() {
     [tenantCategories]
   );
 
-  // Seçilmiş filialın item-lərinin aid olduğu kateqoriyalar (kateqoriya Ümumi olsa da
-  // həmin filialda item varsa görünür). Filial dəyişəndə dropdown dəyişir.
-  const scopedCategoryIds = useMemo(() => {
-    const ids = new Set<number>();
+  // Kateqoriya filter dropdownu: filial-spesifik kateqoriyalar (branchId===scope, yeni
+  // yaradılan boş kateqoriya da daxil) + həmin filialda item-i olan Ümumi kateqoriyalar.
+  // "Hamısı" scope-da bütün kateqoriyalar.
+  const scopedCategories = useMemo(() => {
+    if (scope === "all") return tenantCategories;
+    const usedIds = new Set<number>();
     for (const item of menuItems ?? []) {
       if (tenantCategoryIds.size > 0 && !tenantCategoryIds.has(item.menuCategoryId))
         continue;
-      if (matchesBranchScope(item.branchId, scope)) ids.add(item.menuCategoryId);
+      if (matchesBranchScope(item.branchId, scope)) usedIds.add(item.menuCategoryId);
     }
-    return ids;
-  }, [menuItems, tenantCategoryIds, scope]);
-
-  const scopedCategories = useMemo(
-    () => tenantCategories.filter((c) => scopedCategoryIds.has(c.id)),
-    [tenantCategories, scopedCategoryIds]
-  );
+    return tenantCategories.filter(
+      (c) =>
+        (typeof scope === "number" && c.branchId === scope) ||
+        (c.branchId == null && (scope === "none" || usedIds.has(c.id)))
+    );
+  }, [tenantCategories, tenantCategoryIds, menuItems, scope]);
 
   // Filial dəyişəndə seçili kateqoriya artıq scope-da yoxdursa filteri sıfırla
   useEffect(() => {

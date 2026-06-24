@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import {
   useMenuItemById,
   useUpdateMenuItem,
-  useMenuItems,
 } from "@/hooks/use-menu-items";
 import { useCategories } from "@/hooks/use-categories";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,6 @@ import { LanguageTabs } from "@/components/admin/LanguageTabs";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
-  matchesBranchScope,
   scopeToBranchId,
   type BranchScope,
 } from "@/contexts/BranchScopeContext";
@@ -61,7 +59,6 @@ export default function MenuItemUpdatePage() {
   const { data: session } = useSession();
   const { data: menuItem, isLoading, isError } = useMenuItemById(id);
   const { data: categories } = useCategories();
-  const { data: menuItems } = useMenuItems();
   const updateMutation = useUpdateMenuItem(id ?? 0);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [existingImageIds, setExistingImageIds] = useState<Set<number>>(
@@ -75,18 +72,14 @@ export default function MenuItemUpdatePage() {
   const tenantCategories = (categories ?? []).filter(
     (c) => c.tenantId === tenantId
   );
-  // Seçilmiş filialın item-lərinin işlətdiyi kateqoriyalar + cari item-in kateqoriyası
-  // (həmişə seçilə bilsin). Filialda item yoxdursa bütün kateqoriyalar göstərilir.
-  const scopedCategories = (() => {
-    const usedIds = new Set<number>();
-    for (const it of menuItems ?? []) {
-      if (matchesBranchScope(it.branchId, branchScope))
-        usedIds.add(it.menuCategoryId);
-    }
-    if (menuItem?.menuCategoryId) usedIds.add(menuItem.menuCategoryId);
-    const used = tenantCategories.filter((c) => usedIds.has(c.id));
-    return used.length > 0 ? used : tenantCategories;
-  })();
+  // Seçilmiş filialın kateqoriyaları: filial-spesifik (branchId===scope) + Ümumi(null)
+  // + cari item-in kateqoriyası (həmişə seçilə bilsin). Yeni kateqoriya dərhal görünür.
+  const scopedCategories = tenantCategories.filter(
+    (c) =>
+      c.branchId == null ||
+      (typeof branchScope === "number" && c.branchId === branchScope) ||
+      c.id === menuItem?.menuCategoryId
+  );
 
   const {
     register,
