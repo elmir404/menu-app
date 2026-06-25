@@ -153,7 +153,7 @@ const en: Dictionary = {
     tryOurFlavors: "Try our flavors",
     wifi: "WiFi details",
     network: "Network",
-    password: "Password",
+    password: "WiFi Password",
     copy: "Copy",
     copied: "Copied",
     contact: "Contact",

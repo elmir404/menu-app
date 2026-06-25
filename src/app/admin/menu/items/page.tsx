@@ -142,6 +142,8 @@ function SortableRow({
   );
 }
 
+const CATEGORY_FILTER_KEY = "admin.itemCategoryFilter";
+
 export default function MenuItemsPage() {
   const { data: session } = useSession();
   const { data: menuItems, isLoading } = useMenuItems();
@@ -150,7 +152,10 @@ export default function MenuItemsPage() {
   const reorderMutation = useReorderMenuItems();
   const { scope, setScope, locked } = useBranchScope();
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>(() => {
+    if (typeof window === "undefined") return "all";
+    return window.localStorage.getItem(CATEGORY_FILTER_KEY) || "all";
+  });
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [items, setItems] = useState<AdminMenuItem[]>([]);
 
@@ -186,6 +191,15 @@ export default function MenuItemsPage() {
         (c.branchId == null && (scope === "none" || usedIds.has(c.id)))
     );
   }, [tenantCategories, tenantCategoryIds, menuItems, scope]);
+
+  // Kateqoriya filtrini persist et (naviqasiyadan sonra qalsın)
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(CATEGORY_FILTER_KEY, categoryFilter);
+    } catch {
+      /* localStorage əlçatan deyil */
+    }
+  }, [categoryFilter]);
 
   // Filial dəyişəndə seçili kateqoriya artıq scope-da yoxdursa filteri sıfırla
   useEffect(() => {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiCopy, FiMapPin, FiPhone, FiMail, FiExternalLink, FiChevronRight, FiInstagram, FiFacebook, FiTwitter, FiYoutube, FiLinkedin, FiGlobe, FiList } from "react-icons/fi";
+import { FiCopy, FiMapPin, FiPhone, FiMail, FiExternalLink, FiChevronRight, FiInstagram, FiFacebook, FiTwitter, FiYoutube, FiLinkedin, FiGlobe, FiList, FiWifi } from "react-icons/fi";
 import { FaGoogle, FaWhatsapp, FaTelegram, FaTiktok, FaPinterestP, FaYelp, FaThreads } from "react-icons/fa6";
 import { SiWaze } from "react-icons/si";
 import RestaurantHeader from "@/components/RestaurantHeader";
@@ -444,7 +444,8 @@ export default function RestaurantPageClient({
       {/* WiFi Information */}
       {wifiList.length > 0 && (
         <section className="mt-4 rounded-xl bg-white p-4 shadow-sm sm:rounded-2xl">
-          <h2 className="text-sm font-semibold text-stone-800">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+            <FiWifi className="text-base text-stone-500" aria-hidden="true" />
             {dict.restaurant.wifi}
           </h2>
           <div className="mt-3 space-y-3">

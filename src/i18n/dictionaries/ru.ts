@@ -155,7 +155,7 @@ const ru: Dictionary = {
     tryOurFlavors: "Попробуйте наши вкусы",
     wifi: "WiFi",
     network: "Сеть",
-    password: "Пароль",
+    password: "Пароль WiFi",
     copy: "Копировать",
     copied: "Скопировано",
     contact: "Контакты",

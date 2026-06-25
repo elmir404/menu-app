@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
@@ -92,6 +92,17 @@ export default function NewMenuItemPage() {
   });
 
   const watchCategoryId = watch("menuCategoryId");
+
+  // Items list-də seçilmiş kateqoriya filtrini öncədən seç (təkrar seçməyə ehtiyac yox)
+  useEffect(() => {
+    if (typeof window === "undefined" || watchCategoryId) return;
+    const stored = window.localStorage.getItem("admin.itemCategoryFilter");
+    if (!stored || stored === "all") return;
+    const id = Number(stored);
+    if (Number.isFinite(id) && scopedCategories.some((c) => c.id === id)) {
+      setValue("menuCategoryId", id);
+    }
+  }, [scopedCategories, watchCategoryId, setValue]);
 
   const onSubmit = async (formData: FormData) => {
     // FormData yarat və bütün sahələri əlavə et

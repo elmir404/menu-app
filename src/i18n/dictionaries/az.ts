@@ -154,7 +154,7 @@ const az: Dictionary = {
     tryOurFlavors: "Dadlarımızı yoxlayın",
     wifi: "WiFi məlumatları",
     network: "Şəbəkə",
-    password: "Şifrə",
+    password: "WiFi Şifrəsi",
     copy: "Kopyala",
     copied: "Kopyalandı",
     contact: "Əlaqə",
