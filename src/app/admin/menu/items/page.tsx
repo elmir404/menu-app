@@ -7,6 +7,7 @@ import {
   useMenuItems,
   useDeleteMenuItem,
   useReorderMenuItems,
+  useUpdateMenuItemInline,
 } from "@/hooks/use-menu-items";
 import { useCategories } from "@/hooks/use-categories";
 import { useSession } from "next-auth/react";
@@ -36,7 +37,7 @@ import {
   scopeToBranchId,
 } from "@/contexts/BranchScopeContext";
 import { getMediaUrl } from "@/lib/api/client";
-import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiPlus, FiTrash2, FiCheck, FiX, FiLoader } from "react-icons/fi";
 import { GripVertical } from "lucide-react";
 import {
   DndContext,
@@ -57,12 +58,34 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { AdminMenuItem } from "@/types/api";
 
+// Inline qiymət update üçün FormData — bütün məcburi sahələr + branchId saxlanılır,
+// fayl göndərilmir (şəkil/video toxunulmur).
+function buildPriceUpdateFormData(item: AdminMenuItem, price: number): FormData {
+  const fd = new FormData();
+  fd.append("currency", item.currency);
+  fd.append("azName", item.azName);
+  fd.append("enName", item.enName);
+  fd.append("ruName", item.ruName);
+  fd.append("currencySign", item.currencySign);
+  if (item.azDescription) fd.append("azDescription", item.azDescription);
+  if (item.enDescription) fd.append("enDescription", item.enDescription);
+  if (item.ruDescription) fd.append("ruDescription", item.ruDescription);
+  if (item.prepTimeMinutes) fd.append("prepTimeMinutes", item.prepTimeMinutes);
+  fd.append("price", price.toFixed(2));
+  fd.append("discountPrice", String(item.discountPrice || 0));
+  fd.append("menuCategoryId", String(item.menuCategoryId));
+  if (item.branchId != null) fd.append("branchId", String(item.branchId));
+  return fd;
+}
+
 function SortableRow({
   item,
   thumb,
   categoryName,
   branchName,
   onDelete,
+  onSavePrice,
+  saving,
   draggable,
 }: {
   item: AdminMenuItem;
@@ -70,10 +93,29 @@ function SortableRow({
   categoryName: string;
   branchName: string;
   onDelete: (id: number) => void;
+  onSavePrice: (item: AdminMenuItem, price: number) => void;
+  saving: boolean;
   draggable: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id, disabled: !draggable });
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [priceDraft, setPriceDraft] = useState("");
+
+  const startEdit = () => {
+    setPriceDraft(String(item.price));
+    setEditingPrice(true);
+  };
+  const cancelEdit = () => setEditingPrice(false);
+  const commitEdit = () => {
+    const p = parseFloat(priceDraft.replace(",", "."));
+    if (!Number.isFinite(p) || p <= 0 || p === item.price) {
+      setEditingPrice(false);
+      return;
+    }
+    onSavePrice(item, p);
+    setEditingPrice(false);
+  };
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -107,13 +149,64 @@ function SortableRow({
       </TableCell>
       <TableCell className="font-medium">{item.azName}</TableCell>
       <TableCell>
-        {item.currencySign}
-        {item.price}
-        {item.discountPrice > 0 && (
-          <span className="ml-1 text-xs text-emerald-600">
-            → {item.currencySign}
-            {item.discountPrice}
-          </span>
+        {editingPrice ? (
+          <div
+            className="flex items-center gap-1"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <Input
+              autoFocus
+              type="number"
+              step="0.01"
+              min="0"
+              value={priceDraft}
+              disabled={saving}
+              onChange={(e) => setPriceDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitEdit();
+                if (e.key === "Escape") cancelEdit();
+              }}
+              className="h-8 w-24"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={saving}
+              onClick={commitEdit}
+              title="Saxla"
+            >
+              {saving ? (
+                <FiLoader className="animate-spin text-stone-500" />
+              ) : (
+                <FiCheck className="text-emerald-600" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={saving}
+              onClick={cancelEdit}
+              title="Ləğv et"
+            >
+              <FiX className="text-stone-400" />
+            </Button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={startEdit}
+            className="rounded px-1 py-0.5 text-left hover:bg-stone-100"
+            title="Qiyməti dəyiş"
+          >
+            {item.currencySign}
+            {item.price}
+            {item.discountPrice > 0 && (
+              <span className="ml-1 text-xs text-emerald-600">
+                → {item.currencySign}
+                {item.discountPrice}
+              </span>
+            )}
+          </button>
         )}
       </TableCell>
       <TableCell>{categoryName}</TableCell>
@@ -150,7 +243,9 @@ export default function MenuItemsPage() {
   const { data: categories } = useCategories();
   const deleteMutation = useDeleteMenuItem();
   const reorderMutation = useReorderMenuItems();
+  const inlinePriceMutation = useUpdateMenuItemInline();
   const { scope, setScope, locked } = useBranchScope();
+  const [savingPriceId, setSavingPriceId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>(() => {
     if (typeof window === "undefined") return "all";
@@ -257,6 +352,21 @@ export default function MenuItemsPage() {
       setDeleteId(null);
     } catch {
       toast.error("Xəta baş verdi");
+    }
+  };
+
+  const handleSavePrice = async (item: AdminMenuItem, price: number) => {
+    setSavingPriceId(item.id);
+    try {
+      await inlinePriceMutation.mutateAsync({
+        id: item.id,
+        formData: buildPriceUpdateFormData(item, price),
+      });
+      toast.success("Qiymət yeniləndi");
+    } catch {
+      toast.error("Qiymət yenilənmədi");
+    } finally {
+      setSavingPriceId(null);
     }
   };
 
@@ -381,6 +491,8 @@ export default function MenuItemsPage() {
                           categoryName={getCategoryName(item.menuCategoryId)}
                           branchName={getBranchName(item)}
                           onDelete={setDeleteId}
+                          onSavePrice={handleSavePrice}
+                          saving={savingPriceId === item.id}
                           draggable={dragEnabled}
                         />
                       );

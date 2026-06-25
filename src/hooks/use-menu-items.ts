@@ -61,6 +61,22 @@ export function useUpdateMenuItem(id: number) {
   });
 }
 
+// Cədvəldən inline qiymət (və s.) yeniləmək üçün — id + FormData
+export function useUpdateMenuItemInline() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const token = session?.accessToken ?? "";
+
+  return useMutation({
+    mutationFn: ({ id, formData }: { id: number; formData: FormData }) =>
+      updateMenuItem(token, id, formData),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["menuItems"] });
+      queryClient.invalidateQueries({ queryKey: ["menuItem", variables.id] });
+    },
+  });
+}
+
 export function useDeleteMenuItem() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
