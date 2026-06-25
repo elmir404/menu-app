@@ -66,7 +66,11 @@ export default function MenuItemUpdatePage() {
   );
   const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
   const [removeVideo, setRemoveVideo] = useState(false);
-  const [branchScope, setBranchScope] = useState<BranchScope>("none");
+  // İstifadəçi filialı dəyişməyibsə item-in öz filialından derive olunur (timing-siz prefill)
+  const [branchOverride, setBranchOverride] = useState<BranchScope | null>(null);
+  const branchScope: BranchScope =
+    branchOverride ??
+    (menuItem ? (menuItem.branchId == null ? "none" : menuItem.branchId) : "none");
 
   const tenantId = session?.tenantId ?? 0;
   const tenantCategories = (categories ?? []).filter(
@@ -86,7 +90,6 @@ export default function MenuItemUpdatePage() {
     handleSubmit,
     setValue,
     watch,
-    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -95,31 +98,31 @@ export default function MenuItemUpdatePage() {
       currencySign: "₼",
       discountPrice: 0,
     },
+    // RHF `values` — async data gələndə formu avtomatik sinxronlaşdırır (reset-timing problemi yox)
+    values: menuItem
+      ? {
+          azName: menuItem.azName ?? "",
+          enName: menuItem.enName ?? "",
+          ruName: menuItem.ruName ?? "",
+          azDescription: menuItem.azDescription ?? "",
+          enDescription: menuItem.enDescription ?? "",
+          ruDescription: menuItem.ruDescription ?? "",
+          price: menuItem.price ?? 0,
+          discountPrice: menuItem.discountPrice ?? 0,
+          currency: menuItem.currency ?? "AZN",
+          currencySign: menuItem.currencySign ?? "₼",
+          prepTimeMinutes: menuItem.prepTimeMinutes ?? "",
+          menuCategoryId: menuItem.menuCategoryId ?? 0,
+        }
+      : undefined,
   });
 
+  // Mövcud şəkillərin id-lərini yüklə (yalnız bir dəfə item gələndə)
   useEffect(() => {
-    if (!menuItem) return;
-    reset({
-      azName: menuItem.azName ?? "",
-      enName: menuItem.enName ?? "",
-      ruName: menuItem.ruName ?? "",
-      azDescription: menuItem.azDescription ?? "",
-      enDescription: menuItem.enDescription ?? "",
-      ruDescription: menuItem.ruDescription ?? "",
-      price: menuItem.price ?? 0,
-      discountPrice: menuItem.discountPrice ?? 0,
-      currency: menuItem.currency ?? "AZN",
-      currencySign: menuItem.currencySign ?? "₼",
-      prepTimeMinutes: menuItem.prepTimeMinutes ?? "",
-      menuCategoryId: menuItem.menuCategoryId ?? 0,
-    });
-    setBranchScope(menuItem.branchId == null ? "none" : menuItem.branchId);
-    if (menuItem.menuItemImages?.length) {
-      setExistingImageIds(
-        new Set(menuItem.menuItemImages.map((img) => img.id))
-      );
+    if (menuItem?.menuItemImages?.length) {
+      setExistingImageIds(new Set(menuItem.menuItemImages.map((img) => img.id)));
     }
-  }, [menuItem, reset]);
+  }, [menuItem]);
 
   const onSubmit = async (formData: FormData) => {
     if (!id) return;
@@ -305,7 +308,7 @@ export default function MenuItemUpdatePage() {
                 className="w-full sm:w-[260px]"
                 value={branchScope}
                 onChange={(s) => {
-                  setBranchScope(s);
+                  setBranchOverride(s);
                   setValue("menuCategoryId", 0); // filial dəyişdi → kateqoriyanı yenidən seç
                 }}
               />
