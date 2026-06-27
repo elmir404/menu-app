@@ -24,7 +24,7 @@ export function BranchScopeSelect({
   onChange,
   includeAll = false,
   disabled = false,
-  className = "w-[200px]",
+  className = "w-full sm:w-[200px]",
   placeholder = "Filial",
 }: {
   value: BranchScope;

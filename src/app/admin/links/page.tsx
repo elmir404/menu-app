@@ -529,14 +529,14 @@ function LinkForm({
           WhatsApp nömrəsi, zəng). Bu halda URL boş ola bilər.
         </p>
         {actions.map((a, i) => (
-          <div key={i} className="flex items-start gap-2">
+          <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-start">
             <Select
               value={a.kind}
               onValueChange={(v) =>
                 updateAction(i, { kind: v as LinkActionKind })
               }
             >
-              <SelectTrigger className="w-[150px] shrink-0">
+              <SelectTrigger className="w-full sm:w-[150px] sm:shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

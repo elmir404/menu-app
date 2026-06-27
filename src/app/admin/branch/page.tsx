@@ -212,10 +212,10 @@ export default function BranchAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-stone-900">Filial</h1>
         <Select value={selectedId} onValueChange={setSelectedId}>
-          <SelectTrigger className="w-[280px]">
+          <SelectTrigger className="w-full sm:w-[280px]">
             <SelectValue placeholder="Filial seç" />
           </SelectTrigger>
           <SelectContent>

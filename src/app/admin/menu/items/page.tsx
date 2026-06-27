@@ -423,7 +423,7 @@ export default function MenuItemsPage() {
           disabled={locked}
         />
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Kateqoriya" />
           </SelectTrigger>
           <SelectContent>
