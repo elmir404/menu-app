@@ -125,10 +125,6 @@ export default function LinksPage() {
 
   const ids = useMemo(() => items.map((i) => i.id), [items]);
 
-  // Reorder yalnız "Bütün filiallar" scope-unda (link reorder tenant-wide-dır;
-  // filtrlənmiş alt-siyahını sıralamaq sortOrder-i pozar).
-  const dragEnabled = scope === "all";
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, {
@@ -230,20 +226,25 @@ export default function LinksPage() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id || !dragEnabled) return;
+    if (!over || active.id === over.id) return;
 
     const oldIndex = items.findIndex((i) => i.id === active.id);
     const newIndex = items.findIndex((i) => i.id === over.id);
-    const reordered = arrayMove(items, oldIndex, newIndex).map((it, idx) => ({
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    // Görünən item-lərin mövcud sortOrder slot-larını qoru: yalnız onları öz aralarında
+    // yenidən payla — gizli scope linklərinin sırasına toxunma, collision olmasın.
+    const slots = items.map((i) => i.sortOrder).sort((a, b) => a - b);
+    const withOrder = reordered.map((it, idx) => ({
       ...it,
-      sortOrder: idx,
+      sortOrder: slots[idx],
     }));
-    setItems(reordered);
+    setItems(withOrder);
 
     reorderMutation
       .mutateAsync({
         tenantId,
-        items: reordered.map((it) => ({ id: it.id, sortOrder: it.sortOrder })),
+        items: withOrder.map((it) => ({ id: it.id, sortOrder: it.sortOrder })),
       })
       .catch(() => {
         toast.error("Sıralama saxlanmadı");
@@ -280,11 +281,6 @@ export default function LinksPage() {
           includeAll
           disabled={locked}
         />
-        {!dragEnabled && (
-          <p className="self-center text-xs text-stone-500">
-            Sıralamaq üçün &quot;Bütün filiallar&quot; seçin
-          </p>
-        )}
       </div>
 
       {isLoading ? (
