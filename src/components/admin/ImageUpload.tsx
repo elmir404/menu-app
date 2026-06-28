@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { FiUpload, FiX } from "react-icons/fi";
+import { ZoomableImage } from "@/components/admin/ZoomableImage";
 
 interface ImageUploadProps {
   files: File[];
@@ -73,8 +74,7 @@ export function ImageUpload({
         <div className="flex flex-wrap gap-2">
           {files.map((file, index) => (
             <div key={index} className="group relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <ZoomableImage
                 src={URL.createObjectURL(file)}
                 alt={file.name}
                 className="h-20 w-20 rounded-lg object-cover"

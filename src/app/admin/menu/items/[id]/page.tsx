@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LanguageTabs } from "@/components/admin/LanguageTabs";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ZoomableImage } from "@/components/admin/ZoomableImage";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
   scopeToBranchId,
@@ -400,8 +401,7 @@ export default function MenuItemUpdatePage() {
                 <div className="flex flex-wrap gap-2">
                   {existingImages.map((img) => (
                     <div key={img.id} className="group relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <ZoomableImage
                         src={getMediaUrl(img.path)}
                         alt={img.fileName}
                         className="h-20 w-20 rounded-lg object-cover"

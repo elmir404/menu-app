@@ -11,6 +11,7 @@ import {
   type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -130,6 +131,9 @@ export default function LinksPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -387,7 +391,7 @@ function SortableRow({
           type="button"
           {...attributes}
           {...listeners}
-          className="flex h-8 w-8 cursor-grab items-center justify-center rounded text-stone-400 hover:bg-stone-100 active:cursor-grabbing"
+          className="flex h-8 w-8 cursor-grab touch-none items-center justify-center rounded text-stone-400 hover:bg-stone-100 active:cursor-grabbing"
           aria-label="Sürüklə"
         >
           <FiMenu />

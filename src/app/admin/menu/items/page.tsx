@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { ZoomableImage } from "@/components/admin/ZoomableImage";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
   useBranchScope,
@@ -44,6 +45,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -125,7 +127,7 @@ function SortableRow({
   return (
     <TableRow ref={setNodeRef} style={style}>
       <TableCell
-        className={`w-10 ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
+        className={`w-10 touch-none ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
         {...(draggable ? attributes : {})}
         {...(draggable ? listeners : {})}
       >
@@ -135,8 +137,7 @@ function SortableRow({
       </TableCell>
       <TableCell>
         {thumb ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <ZoomableImage
             src={thumb}
             alt={item.azName}
             className="h-10 w-10 rounded object-cover"
@@ -372,6 +373,9 @@ export default function MenuItemsPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 

@@ -24,6 +24,7 @@ import {
   uploadBannerVideo,
 } from "@/lib/api/admin";
 import { getMediaUrl } from "@/lib/api/client";
+import { ZoomableImage } from "@/components/admin/ZoomableImage";
 import type { AdminBranch } from "@/types/api";
 
 type BannerMode = "video" | "images";
@@ -340,14 +341,13 @@ export default function BranchAdminPage() {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {bannerImages.map((url, idx) => (
                 <div key={idx} className="group relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <ZoomableImage
                     src={getMediaUrl(url)}
                     alt=""
                     className="aspect-[16/9] w-full rounded-lg object-cover"
                   />
-                  <div className="absolute inset-0 flex items-end justify-between gap-1 bg-black/40 p-1 opacity-0 transition group-hover:opacity-100">
-                    <div className="flex gap-1">
+                  <div className="pointer-events-none absolute inset-0 flex items-end justify-between gap-1 bg-black/40 p-1 opacity-0 transition group-hover:opacity-100">
+                    <div className="pointer-events-auto flex gap-1">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -368,6 +368,7 @@ export default function BranchAdminPage() {
                     <Button
                       size="sm"
                       variant="destructive"
+                      className="pointer-events-auto"
                       onClick={() => removeImage(idx)}
                     >
                       <FiX />

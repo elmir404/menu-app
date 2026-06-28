@@ -34,6 +34,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -68,7 +69,7 @@ function SortableRow({
   return (
     <TableRow ref={setNodeRef} style={style}>
       <TableCell
-        className={`w-10 ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
+        className={`w-10 touch-none ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
         {...(draggable ? attributes : {})}
         {...(draggable ? listeners : {})}
       >
@@ -153,6 +154,9 @@ export default function CategoriesPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
