@@ -181,6 +181,8 @@ const en: Dictionary = {
     proceedToCheckout: "Proceed to checkout",
     listView: "List view",
     gridView: "Grid view",
+    searchPlaceholder: "Search (name, ingredients...)",
+    searchEmpty: "Nothing found",
     decrease: "Decrease",
     increase: "Increase",
     viewIngredients: "See ingredients",

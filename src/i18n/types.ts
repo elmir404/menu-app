@@ -100,6 +100,8 @@ export interface Dictionary {
     proceedToCheckout: string;
     listView: string;
     gridView: string;
+    searchPlaceholder: string;
+    searchEmpty: string;
     decrease: string;
     increase: string;
     viewIngredients: string;

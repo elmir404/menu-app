@@ -182,6 +182,8 @@ const az: Dictionary = {
     proceedToCheckout: "Ödənişə keç",
     listView: "Siyahı görünüşü",
     gridView: "Şəbəkə görünüşü",
+    searchPlaceholder: "Axtar (ad, tərkib...)",
+    searchEmpty: "Heç nə tapılmadı",
     decrease: "Azalt",
     increase: "Artır",
     viewIngredients: "Tərkibinə bax",

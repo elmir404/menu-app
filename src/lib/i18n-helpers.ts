@@ -1,3 +1,15 @@
+// Axtarış üçün mətni normallaşdırır: kiçik hərf + diakritikləri çıxarır.
+// AZ hərfləri fərqli yazılsa da tapılsın: ş→s, ç→c, ö→o, ü→u, ğ→g, İ→i (NFD ilə),
+// ə→e, ı→i (dekompozisiya olunmayanlar əl ilə).
+export function normalizeSearch(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(new RegExp("[\\u0300-\\u036f]", "g"), "")
+    .replace(/ə/g, "e") // ə
+    .replace(/ı/g, "i"); // ı
+}
+
 export function getLocalizedName(
   item: { azName: string; enName: string; ruName: string },
   locale: string

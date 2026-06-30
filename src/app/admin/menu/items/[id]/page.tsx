@@ -160,6 +160,12 @@ export default function MenuItemUpdatePage() {
       fd.append("files", file);
     });
 
+    // Redaktədə silinmiş mövcud şəkillərin id-ləri (backend bunları storage+DB-dən silir)
+    const removedImageIds = (menuItem?.menuItemImages ?? [])
+      .map((img) => img.id)
+      .filter((imgId) => !existingImageIds.has(imgId));
+    removedImageIds.forEach((rid) => fd.append("removedImageIds", String(rid)));
+
     if (newVideoFile) {
       fd.append("ingredientVideoFile", newVideoFile);
     }

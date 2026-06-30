@@ -183,6 +183,8 @@ const ru: Dictionary = {
     proceedToCheckout: "Перейти к оплате",
     listView: "Список",
     gridView: "Сетка",
+    searchPlaceholder: "Поиск (название, состав...)",
+    searchEmpty: "Ничего не найдено",
     decrease: "Уменьшить",
     increase: "Увеличить",
     viewIngredients: "Состав",

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiClock, FiGrid, FiList, FiPlus } from "react-icons/fi";
+import { FiClock, FiGrid, FiList, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
@@ -15,7 +15,11 @@ import { useTenant } from "@/components/providers/TenantProvider";
 import type { PublicMenuCategory, PublicMenuItem, RestaurantPublic } from "@/types/api";
 import { getMediaUrl } from "@/lib/api/client";
 import { useCart } from "@/hooks/use-cart";
-import { getLocalizedName, getLocalizedDescription } from "@/lib/i18n-helpers";
+import {
+  getLocalizedName,
+  getLocalizedDescription,
+  normalizeSearch,
+} from "@/lib/i18n-helpers";
 
 const SCROLL_UPDATE_DELAY_MS = 150;
 const CLICK_SCROLL_COOLDOWN_MS = 600;
@@ -41,6 +45,9 @@ export default function MenuPageClient({
   const [branchInfo, setBranchInfo] = useState<RestaurantPublic | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number>(0);
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const sectionRefs = useRef<Record<number, HTMLElement>>({});
   const headingRefs = useRef<Record<number, HTMLElement>>({});
   const categoryPillsRef = useRef<HTMLDivElement>(null);
@@ -246,6 +253,37 @@ export default function MenuPageClient({
     total: ci.total,
   }));
 
+  // Axtarış: ad + tərkib (description), bütün 3 dil üzrə; diakritik/hərf fərqinə dözümlü.
+  const displayedCategories = useMemo(() => {
+    const tokens = normalizeSearch(search.trim()).split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return categories;
+    return categories
+      .map((c) => ({
+        ...c,
+        items: c.items.filter((it) => {
+          const hay = normalizeSearch(
+            [
+              it.azName,
+              it.enName,
+              it.ruName,
+              it.azDescription,
+              it.enDescription,
+              it.ruDescription,
+              c.azName,
+              c.enName,
+              c.ruName,
+            ]
+              .filter(Boolean)
+              .join(" ")
+          );
+          return tokens.every((t) => hay.includes(t));
+        }),
+      }))
+      .filter((c) => c.items.length > 0);
+  }, [categories, search]);
+
+  const searchActive = search.trim().length > 0;
+
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="sticky top-0 z-10 bg-stone-50 px-4 pb-2 pt-4">
@@ -291,6 +329,32 @@ export default function MenuPageClient({
             ))}
           </div>
         )}
+        {searchOpen && (
+          <div className="mt-2 flex items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-2">
+            <FiSearch className="shrink-0 text-stone-400" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={dict.menu.searchPlaceholder}
+              className="min-w-0 flex-1 bg-transparent text-sm text-stone-900 outline-none placeholder:text-stone-400"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  searchInputRef.current?.focus();
+                }}
+                aria-label="×"
+                className="shrink-0 text-stone-400 hover:text-stone-700"
+              >
+                <FiX className="text-base" />
+              </button>
+            )}
+          </div>
+        )}
         <div className="mt-2">
           <div
             ref={categoryPillsRef}
@@ -327,6 +391,25 @@ export default function MenuPageClient({
             <button
               type="button"
               className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                searchOpen
+                  ? "border-stone-900 bg-stone-900 text-white"
+                  : "border-stone-200 bg-white text-stone-700"
+              }`}
+              onClick={() => {
+                setSearchOpen((open) => {
+                  const next = !open;
+                  if (!next) setSearch("");
+                  else setTimeout(() => searchInputRef.current?.focus(), 0);
+                  return next;
+                });
+              }}
+              aria-label={dict.menu.searchPlaceholder}
+            >
+              <FiSearch className="text-base" />
+            </button>
+            <button
+              type="button"
+              className={`flex h-7 w-7 items-center justify-center rounded-full border ${
                 viewMode === "list"
                   ? "border-stone-900 bg-stone-900 text-white"
                   : "border-stone-200 bg-white text-stone-700"
@@ -353,8 +436,13 @@ export default function MenuPageClient({
       </div>
 
       <div className="px-4 pb-6">
+        {searchActive && displayedCategories.length === 0 && (
+          <p className="mt-8 text-center text-sm text-stone-500">
+            {dict.menu.searchEmpty}
+          </p>
+        )}
         <div className="mt-2 space-y-6">
-          {categories.map((category) => (
+          {displayedCategories.map((category) => (
             <section
               key={category.id}
               ref={(node) => {
