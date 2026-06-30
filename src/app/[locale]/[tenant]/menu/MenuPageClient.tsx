@@ -190,6 +190,38 @@ export default function MenuPageClient({
     if (btn) btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [activeCategoryId]);
 
+  // Axtarış: ad + tərkib (description), bütün 3 dil üzrə; diakritik/hərf fərqinə dözümlü.
+  // QEYD: hook-lar erkən return-lardan ƏVVƏL çağırılmalıdır (React #310).
+  const displayedCategories = useMemo(() => {
+    const tokens = normalizeSearch(search.trim()).split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return categories;
+    return categories
+      .map((c) => ({
+        ...c,
+        items: c.items.filter((it) => {
+          const hay = normalizeSearch(
+            [
+              it.azName,
+              it.enName,
+              it.ruName,
+              it.azDescription,
+              it.enDescription,
+              it.ruDescription,
+              c.azName,
+              c.enName,
+              c.ruName,
+            ]
+              .filter(Boolean)
+              .join(" ")
+          );
+          return tokens.every((t) => hay.includes(t));
+        }),
+      }))
+      .filter((c) => c.items.length > 0);
+  }, [categories, search]);
+
+  const searchActive = search.trim().length > 0;
+
   if (status === "loading") return <LoadingState message={dict.menu.loading} />;
   if (status === "error") return <ErrorState message={dict.menu.error} />;
 
@@ -252,37 +284,6 @@ export default function MenuPageClient({
     quantity: ci.quantity,
     total: ci.total,
   }));
-
-  // Axtarış: ad + tərkib (description), bütün 3 dil üzrə; diakritik/hərf fərqinə dözümlü.
-  const displayedCategories = useMemo(() => {
-    const tokens = normalizeSearch(search.trim()).split(/\s+/).filter(Boolean);
-    if (tokens.length === 0) return categories;
-    return categories
-      .map((c) => ({
-        ...c,
-        items: c.items.filter((it) => {
-          const hay = normalizeSearch(
-            [
-              it.azName,
-              it.enName,
-              it.ruName,
-              it.azDescription,
-              it.enDescription,
-              it.ruDescription,
-              c.azName,
-              c.enName,
-              c.ruName,
-            ]
-              .filter(Boolean)
-              .join(" ")
-          );
-          return tokens.every((t) => hay.includes(t));
-        }),
-      }))
-      .filter((c) => c.items.length > 0);
-  }, [categories, search]);
-
-  const searchActive = search.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-stone-50">
