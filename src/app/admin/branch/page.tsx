@@ -49,6 +49,8 @@ export default function BranchAdminPage() {
   const [announcementAz, setAnnouncementAz] = useState("");
   const [announcementEn, setAnnouncementEn] = useState("");
   const [announcementRu, setAnnouncementRu] = useState("");
+  const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -88,6 +90,8 @@ export default function BranchAdminPage() {
         setAnnouncementAz(b.announcementAz || "");
         setAnnouncementEn(b.announcementEn || "");
         setAnnouncementRu(b.announcementRu || "");
+        setMetaTitle(b.metaTitle || "");
+        setMetaDescription(b.metaDescription || "");
       })
       .catch(() => toast.error("Filial məlumatı alınmadı"));
   }, [token, selectedId]);
@@ -162,6 +166,8 @@ export default function BranchAdminPage() {
               announcementAz,
               announcementEn,
               announcementRu,
+              metaTitle,
+              metaDescription,
             }
           : {
               backgroundColor: bgColor || null,
@@ -173,6 +179,8 @@ export default function BranchAdminPage() {
               announcementAz,
               announcementEn,
               announcementRu,
+              metaTitle,
+              metaDescription,
             };
       await updateBranch(token, current.id, payload);
       toast.success("Yadda saxlanıldı");
@@ -194,6 +202,8 @@ export default function BranchAdminPage() {
     announcementAz,
     announcementEn,
     announcementRu,
+    metaTitle,
+    metaDescription,
   ]);
 
   const branchOptions = useMemo(
@@ -431,6 +441,34 @@ export default function BranchAdminPage() {
               rows={3}
             />
           </div>
+        </div>
+      </section>
+
+      {/* Link preview (paylaşım) */}
+      <section className="space-y-3 rounded-lg border bg-white p-4">
+        <h2 className="text-sm font-semibold text-stone-700">
+          Link preview (paylaşım)
+        </h2>
+        <p className="text-xs text-stone-500">
+          Link paylaşılanda görünən başlıq və təsvir. Boş buraxılsa avtomatik (filial adı /
+          restoran təsviri) istifadə olunur.
+        </p>
+        <div className="space-y-1.5">
+          <Label>Başlıq (title)</Label>
+          <Input
+            value={metaTitle}
+            onChange={(e) => setMetaTitle(e.target.value)}
+            placeholder="məs. Ruin Restaurant — Bakı"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Təsvir (description)</Label>
+          <Textarea
+            value={metaDescription}
+            onChange={(e) => setMetaDescription(e.target.value)}
+            placeholder="məs. Şəhərin mərkəzində müasir mətbəx. Rezervasiya üçün zəng edin."
+            rows={3}
+          />
         </div>
       </section>
 

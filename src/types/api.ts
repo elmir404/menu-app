@@ -154,6 +154,8 @@ export interface RestaurantBranchOverride {
   announcementAz: string | null;
   announcementEn: string | null;
   announcementRu: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
 }
 
 // ─── Public Menu ─────────────────────────────────────────────────────────────
@@ -326,6 +328,8 @@ export interface AdminBranch {
   announcementAz?: string | null;
   announcementEn?: string | null;
   announcementRu?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
 }
 
 export interface UpdateBranchPatchRequest {
@@ -339,6 +343,8 @@ export interface UpdateBranchPatchRequest {
   announcementAz?: string | null;
   announcementEn?: string | null;
   announcementRu?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
 }
 
 export interface BannerVideoUploadResponse {

@@ -54,6 +54,8 @@ export async function buildPublicMetadata({
   let branchName: string | null = null;
   let logoPath: string | null = tenantLogo;
   let description = tenantDesc;
+  // Admin-də filial üçün təyin olunan link-preview mətnləri (boşdursa fallback).
+  let metaTitleOverride: string | null = null;
 
   if (branchSlug) {
     const branch = tenantConfig?.branches?.find((b) => b.slug === branchSlug);
@@ -65,9 +67,12 @@ export async function buildPublicMetadata({
       branch?.logoUrl || ov?.logoUrl || branch?.photoUrl || ov?.photoUrl || null;
     if (branchLogo) logoPath = branchLogo;
 
+    metaTitleOverride = ov?.metaTitle?.trim() || null;
+
     const address = branch?.address || ov?.address || null;
     const announcement = pickAnnouncement(ov, locale);
     description =
+      ov?.metaDescription?.trim() ||
       announcement ||
       tenantDesc ||
       `${tenantName} — ${branchName}${address ? `, ${address}` : ""}`;
@@ -75,13 +80,15 @@ export async function buildPublicMetadata({
 
   if (!description) description = dict.meta.description;
 
-  const title = branchSlug
-    ? section === "menu"
-      ? `${dict.nav.menu} — ${branchName} | ${tenantName}`
-      : `${branchName} — ${tenantName}`
-    : section === "menu"
-    ? `${dict.nav.menu} | ${tenantName}`
-    : `${dict.nav.restaurant} | ${tenantName}`;
+  const title =
+    metaTitleOverride ||
+    (branchSlug
+      ? section === "menu"
+        ? `${dict.nav.menu} — ${branchName} | ${tenantName}`
+        : `${branchName} — ${tenantName}`
+      : section === "menu"
+      ? `${dict.nav.menu} | ${tenantName}`
+      : `${dict.nav.restaurant} | ${tenantName}`);
 
   const path = branchSlug
     ? `/${tenantSlug}/b/${branchSlug}/${section}`
