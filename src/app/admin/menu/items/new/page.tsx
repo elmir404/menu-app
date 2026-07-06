@@ -61,7 +61,13 @@ export default function NewMenuItemPage() {
 
   const tenantId = session?.tenantId ?? 0;
   const tenantCategories = useMemo(
-    () => (categories ?? []).filter((c) => c.tenantId === tenantId),
+    () =>
+      (categories ?? []).filter((c) => {
+        // Superadmin/tenantsız hesabda (tenantId=0) bütün kateqoriyalar görünsün —
+        // items list səhifəsi ilə eyni davranış.
+        if (!tenantId || tenantId === 0) return true;
+        return c.tenantId === tenantId;
+      }),
     [categories, tenantId]
   );
   // Seçilmiş filialın kateqoriyaları: filial-spesifik (branchId===scope) + Ümumi(null).

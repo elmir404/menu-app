@@ -74,9 +74,13 @@ export default function MenuItemUpdatePage() {
     (menuItem ? (menuItem.branchId == null ? "none" : menuItem.branchId) : "none");
 
   const tenantId = session?.tenantId ?? 0;
-  const tenantCategories = (categories ?? []).filter(
-    (c) => c.tenantId === tenantId
-  );
+  const tenantCategories = (categories ?? []).filter((c) => {
+    // Superadmin/tenantsız hesabda (tenantId=0) bütün kateqoriyalar görünsün —
+    // items list səhifəsi ilə eyni davranış; əks halda dropdown boş qalır və
+    // item-in mövcud kateqoriyası preselect olunmur.
+    if (!tenantId || tenantId === 0) return true;
+    return c.tenantId === tenantId;
+  });
   // Seçilmiş filialın kateqoriyaları: filial-spesifik (branchId===scope) + Ümumi(null)
   // + cari item-in kateqoriyası (həmişə seçilə bilsin). Yeni kateqoriya dərhal görünür.
   const scopedCategories = tenantCategories.filter(
