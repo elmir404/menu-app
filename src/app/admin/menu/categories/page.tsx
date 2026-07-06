@@ -108,7 +108,7 @@ function SortableRow({
 
 export default function CategoriesPage() {
   const { data: session } = useSession();
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading } = useCategories(session?.tenantId || undefined);
   const deleteMutation = useDeleteCategory();
   const reorderMutation = useReorderCategories();
   const { scope, setScope, locked } = useBranchScope();

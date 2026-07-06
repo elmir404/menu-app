@@ -17,8 +17,8 @@ export default function AdminDashboard() {
   const { data: tenantConfig } = useAdminTenant();
 
   const tenantId = session?.tenantId ?? 0;
-  const { data: categories, isLoading: catLoading } = useCategories();
-  const { data: menuItems, isLoading: itemLoading } = useMenuItems();
+  const { data: categories, isLoading: catLoading } = useCategories(tenantId || undefined);
+  const { data: menuItems, isLoading: itemLoading } = useMenuItems(tenantId || undefined);
   const { data: wifiList, isLoading: wifiLoading } = useWifi();
 
   if (authStatus === "loading") {

@@ -12,13 +12,14 @@ import {
   type ReorderMenuRequest,
 } from "@/lib/api/admin";
 
-export function useMenuItems() {
+export function useMenuItems(tenantId?: number) {
   const { data: session } = useSession();
   const token = session?.accessToken ?? "";
 
   return useQuery({
-    queryKey: ["menuItems"],
-    queryFn: () => getMenuItems(token),
+    // tenantId: tenant claim olmayan (superadmin) hesablar üçün açıq kontekst.
+    queryKey: ["menuItems", tenantId ?? null],
+    queryFn: () => getMenuItems(token, tenantId),
     enabled: !!token,
   });
 }

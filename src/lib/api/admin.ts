@@ -29,10 +29,14 @@ function authHeaders(token: string) {
 // ─── Menu Categories ─────────────────────────────────────────────────────────
 
 export async function getCategories(
-  token: string
+  token: string,
+  tenantId?: number
 ): Promise<AdminMenuCategory[]> {
+  // tenantId: token-də tenant claim olmayan (superadmin) hesablar üçün açıq override —
+  // backend parametrsiz sorğuda "Tenant Id təyin olunmayıb" (400) qaytarır.
+  const qs = tenantId ? `?tenantId=${tenantId}` : "";
   const { data } = await authApi.get<ApiResponse<AdminMenuCategory[]>>(
-    "/api/MenuCategory/List",
+    `/api/MenuCategory/List${qs}`,
     authHeaders(token)
   );
   return unwrap(data);
@@ -122,10 +126,13 @@ export async function reorderMenuItems(
 // ─── Menu Items ──────────────────────────────────────────────────────────────
 
 export async function getMenuItems(
-  token: string
+  token: string,
+  tenantId?: number
 ): Promise<AdminMenuItem[]> {
+  // tenantId: bax getCategories — tenant claim olmayan hesablar üçün override.
+  const qs = tenantId ? `?tenantId=${tenantId}` : "";
   const { data } = await authApi.get<ApiResponse<AdminMenuItem[]>>(
-    "/api/MenuItem/List",
+    `/api/MenuItem/List${qs}`,
     authHeaders(token)
   );
   return unwrap(data);

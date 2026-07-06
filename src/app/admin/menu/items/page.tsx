@@ -240,8 +240,9 @@ const CATEGORY_FILTER_KEY = "admin.itemCategoryFilter";
 
 export default function MenuItemsPage() {
   const { data: session } = useSession();
-  const { data: menuItems, isLoading } = useMenuItems();
-  const { data: categories } = useCategories();
+  // Tenant claim olmayan (superadmin) hesabda parametrsiz sorğular 400 qaytarır.
+  const { data: menuItems, isLoading } = useMenuItems(session?.tenantId || undefined);
+  const { data: categories } = useCategories(session?.tenantId || undefined);
   const deleteMutation = useDeleteMenuItem();
   const reorderMutation = useReorderMenuItems();
   const inlinePriceMutation = useUpdateMenuItemInline();

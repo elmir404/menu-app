@@ -59,7 +59,11 @@ export default function MenuItemUpdatePage() {
   const id = params?.id ? Number(params.id) : undefined;
   const { data: session } = useSession();
   const { data: menuItem, isLoading, isError } = useMenuItemById(id);
-  const { data: categories } = useCategories();
+  // Kateqoriyaları item-in öz tenant-ı ilə istə — tenant claim olmayan (superadmin)
+  // hesabda parametrsiz sorğu 400 qaytarır və dropdown boş qalırdı.
+  const { data: categories } = useCategories(
+    menuItem?.tenantId ?? (session?.tenantId || undefined)
+  );
   const updateMutation = useUpdateMenuItem(id ?? 0);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [existingImageIds, setExistingImageIds] = useState<Set<number>>(

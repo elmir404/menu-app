@@ -16,13 +16,15 @@ import type {
   UpdateMenuCategoryRequest,
 } from "@/types/api";
 
-export function useCategories() {
+export function useCategories(tenantId?: number) {
   const { data: session } = useSession();
   const token = session?.accessToken ?? "";
 
   return useQuery({
-    queryKey: ["categories"],
-    queryFn: () => getCategories(token),
+    // tenantId: tenant claim olmayan (superadmin) hesablar üçün açıq kontekst;
+    // queryKey-ə daxil edilir ki, tenant dəyişəndə cache qarışmasın.
+    queryKey: ["categories", tenantId ?? null],
+    queryFn: () => getCategories(token, tenantId),
     enabled: !!token,
   });
 }

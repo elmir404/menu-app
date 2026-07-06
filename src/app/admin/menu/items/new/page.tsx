@@ -50,7 +50,8 @@ type FormData = z.infer<typeof schema>;
 export default function NewMenuItemPage() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { data: categories } = useCategories();
+  // Tenant claim olmayan (superadmin) hesabda parametrsiz kateqoriya sorğusu 400 qaytarır.
+  const { data: categories } = useCategories(session?.tenantId || undefined);
   const addMutation = useAddMenuItem();
   const { scope } = useBranchScope();
   const [files, setFiles] = useState<File[]>([]);

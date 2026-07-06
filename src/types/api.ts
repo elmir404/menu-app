@@ -275,6 +275,7 @@ export interface AdminMenuItem {
   discountPrice: number;
   menuCategoryId: number;
   menuCategory: AdminMenuCategory | null;
+  tenantId?: number | null;
   menuItemImages: MenuItemImage[];
   ingredientVideoUrl: string | null;
   sortOrder: number;
