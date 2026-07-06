@@ -83,12 +83,22 @@ export default function MenuItemUpdatePage() {
   });
   // Seçilmiş filialın kateqoriyaları: filial-spesifik (branchId===scope) + Ümumi(null)
   // + cari item-in kateqoriyası (həmişə seçilə bilsin). Yeni kateqoriya dərhal görünür.
-  const scopedCategories = tenantCategories.filter(
+  const filteredCategories = tenantCategories.filter(
     (c) =>
       c.branchId == null ||
       (typeof branchScope === "number" && c.branchId === branchScope) ||
       c.id === menuItem?.menuCategoryId
   );
+  // Zəmanət: item-in öz kateqoriyası siyahıda yoxdursa (kateqoriya sorğusu uğursuz,
+  // kateqoriya silinib/inactive və ya başqa tenant/filial scope-u), onu response-dan
+  // gələn menuItem.menuCategory obyektindən əlavə et — yoxsa Radix Select dəyəri
+  // olsa belə uyğun SelectItem tapmayıb placeholder göstərir (preselect itir).
+  const scopedCategories =
+    menuItem?.menuCategoryId &&
+    menuItem.menuCategory &&
+    !filteredCategories.some((c) => c.id === menuItem.menuCategoryId)
+      ? [menuItem.menuCategory, ...filteredCategories]
+      : filteredCategories;
 
   const {
     register,
