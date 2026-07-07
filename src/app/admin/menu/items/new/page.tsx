@@ -254,7 +254,11 @@ export default function NewMenuItemPage() {
                   value={
                     watchCategoryId ? String(watchCategoryId) : ""
                   }
-                  onValueChange={(val) => setValue("menuCategoryId", Number(val))}
+                  onValueChange={(val) => {
+                    // Radix Select kolleksiya dəyişəndə özbaşına "" atır — dəyəri sıfırlamasın
+                    if (!val) return;
+                    setValue("menuCategoryId", Number(val));
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Kateqoriya seçin" />

@@ -346,7 +346,14 @@ export default function MenuItemUpdatePage() {
                 <Label>Kateqoriya</Label>
                 <Select
                   value={watch("menuCategoryId") ? String(watch("menuCategoryId")) : ""}
-                  onValueChange={(val) => setValue("menuCategoryId", Number(val))}
+                  onValueChange={(val) => {
+                    // Radix Select item kolleksiyası dəyişəndə (async kateqoriya yüklənməsi)
+                    // özbaşına onValueChange("") atır — bu, formdakı düzgün dəyəri 0-a
+                    // sıfırlayıb preselect-i itirirdi. Boş dəyər həmişə iqnor olunur;
+                    // real seçimlər heç vaxt boş olmur.
+                    if (!val) return;
+                    setValue("menuCategoryId", Number(val));
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Kateqoriya seçin" />
