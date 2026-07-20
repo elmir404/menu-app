@@ -34,6 +34,7 @@ export default function ItemDetailClient({
   const [modalQuantity, setModalQuantity] = useState(1);
   const [mounted, setMounted] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [posterVisible, setPosterVisible] = useState(true);
   const [ended, setEnded] = useState(false);
   const [rewinding, setRewinding] = useState(false);
   const rewindRafRef = useRef<number | null>(null);
@@ -60,6 +61,10 @@ export default function ItemDetailClient({
   const displayPrice = hasDiscount ? item.discountPrice : item.price;
   const imageUrl = item.imageUrls?.[0] ?? "";
   const hasVideo = !!item.ingredientVideoUrl;
+  const posterUrl = item.ingredientVideoPosterUrl
+    ? `${item.ingredientVideoPosterUrl}${item.ingredientVideoPosterUrl.includes("?") ? "&" : "?"}v=2`
+    : null;
+  const posterSrc = posterUrl || imageUrl || null;
 
   const cartItem = mounted ? cartItems.find((ci) => ci.id === item.id) : undefined;
   const inCartQuantity = cartItem?.quantity ?? 0;
@@ -128,29 +133,36 @@ export default function ItemDetailClient({
     if (!hasVideo) return;
     const video = videoRef.current;
     if (!video) return;
-    const CAPTURE_INTERVAL_MS = 33;
-    const TARGET_W = 720;
-    const MAX_FRAMES = 600;
+    // Aşağı fps + kiçik ölçü + byte büdcəsi: iOS Safari yaddaş limitini aşmamaq üçün
+    // (köhnə 720px/30fps/600 frame variantı ~2GB RGBA yığırdı → jetsam crash).
+    const CAPTURE_INTERVAL_MS = 100;
+    const TARGET_W = 320;
+    const FRAME_BUDGET_BYTES = 64 * 1024 * 1024;
+    let captureBusy = false;
 
     const captureFrame = async () => {
+      if (captureBusy) return;
       if (video.paused || video.ended) return;
       if (!video.videoWidth || !video.videoHeight) return;
       const scale = TARGET_W / video.videoWidth;
       const w = Math.max(1, Math.round(video.videoWidth * scale));
       const h = Math.max(1, Math.round(video.videoHeight * scale));
+      const maxFrames = Math.min(150, Math.max(30, Math.floor(FRAME_BUDGET_BYTES / (w * h * 4))));
+      captureBusy = true;
       try {
         const bmp = await createImageBitmap(video, {
           resizeWidth: w,
           resizeHeight: h,
-          resizeQuality: "high",
+          resizeQuality: "low",
         });
         framesRef.current.push(bmp);
-        // Memory bound: ~20s buffer @ 30 fps. Köhnəni at ki, qaz axmasın.
-        while (framesRef.current.length > MAX_FRAMES) {
+        while (framesRef.current.length > maxFrames) {
           const oldest = framesRef.current.shift();
           try { oldest?.close?.(); } catch { /* ignore */ }
         }
-      } catch { /* ignore */ }
+      } catch { /* ignore */ } finally {
+        captureBusy = false;
+      }
     };
 
     const start = () => {
@@ -297,6 +309,8 @@ export default function ItemDetailClient({
       const f0 = frames[0];
       if (canvas.width !== f0.width) canvas.width = f0.width;
       if (canvas.height !== f0.height) canvas.height = f0.height;
+      // Canvas görünməzdən əvvəl çəkilmiş olsun — boş canvas flash-ı olmasın.
+      drawCanvasFrame(progressRef.current);
       setShowCanvas(true);
     }
 
@@ -383,14 +397,13 @@ export default function ItemDetailClient({
           <video
             ref={videoRef}
             src={item.ingredientVideoUrl!}
-            poster={item.ingredientVideoPosterUrl
-              ? `${item.ingredientVideoPosterUrl}${item.ingredientVideoPosterUrl.includes("?") ? "&" : "?"}v=2`
-              : undefined}
+            poster={posterUrl ?? undefined}
             muted
             playsInline
             preload="metadata"
             onClick={handleVideoTap}
             onPlay={() => { setPlaying(true); setEnded(false); }}
+            onPlaying={() => setPosterVisible(false)}
             onPause={() => setPlaying(false)}
             onEnded={() => { setPlaying(false); setEnded(true); }}
             onError={(e) => {
@@ -403,12 +416,23 @@ export default function ItemDetailClient({
               });
             }}
             className="absolute inset-0 h-full w-full cursor-pointer bg-black object-cover object-center"
-            style={{ visibility: showCanvas ? "hidden" : "visible" }}
           />
+          {/* Poster overlay — Safari ilk frame decode edənə qədər qara ekran görsənməsin.
+              İlk real frame render olunanda (playing) birdəfəlik gizlənir. */}
+          {posterVisible && posterSrc && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={posterSrc}
+              alt=""
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+            />
+          )}
+          {/* Canvas video üstündə opacity ilə görünür — display/visibility toggle
+              Safari-də qara flash verirdi. */}
           <canvas
             ref={canvasRef}
-            className="pointer-events-none absolute inset-0 h-full w-full bg-black"
-            style={{ display: showCanvas ? "block" : "none", objectFit: "cover", objectPosition: "center" }}
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            style={{ opacity: showCanvas ? 1 : 0, objectFit: "cover", objectPosition: "center" }}
           />
         </div>
       )}
@@ -429,6 +453,7 @@ export default function ItemDetailClient({
       {/* Sticky back button */}
       <Link
         href={backHref}
+        scroll={false}
         className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-stone-800 shadow-md backdrop-blur transition hover:bg-white"
         aria-label="Geri"
       >
@@ -556,6 +581,7 @@ export default function ItemDetailClient({
           <div className="absolute inset-x-0 bottom-3 flex justify-center px-4">
             <Link
               href={backHref}
+              scroll={false}
               className="flex w-full max-w-md items-center justify-between rounded-full bg-stone-900/90 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur"
             >
               <span className="flex items-center gap-2">

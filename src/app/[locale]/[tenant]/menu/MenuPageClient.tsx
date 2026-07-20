@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FiClock, FiGrid, FiList, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
@@ -14,6 +14,7 @@ import { useLocale } from "@/components/providers/LocaleProvider";
 import { useTenant } from "@/components/providers/TenantProvider";
 import type { PublicMenuCategory, PublicMenuItem, RestaurantPublic } from "@/types/api";
 import { getMediaUrl } from "@/lib/api/client";
+import { getCachedMenu, menuCacheKey, setCachedMenu } from "@/lib/menu-cache";
 import { useCart } from "@/hooks/use-cart";
 import {
   getLocalizedName,
@@ -37,6 +38,7 @@ export default function MenuPageClient({
   branchSlug,
 }: MenuPageClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const dict = useDictionary();
   const currentLocale = useLocale();
   const tenantConfig = useTenant();
@@ -60,8 +62,24 @@ export default function MenuPageClient({
   const { items: cartItems, totals: cartTotals, add, increment, decrement } = useCart();
   const [lastAdded, setLastAdded] = useState<{ id: number; ts: number } | null>(null);
   const lastAddedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hadCacheRef = useRef(false);
+  const didRestoreScrollRef = useRef(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+  const cacheKey = menuCacheKey(tenantSlug, branchSlug);
+  const scrollKey = `menu-scroll:${pathname}`;
+
+  // Cache hit → paint-dən əvvəl render, spinner heç görünmür.
+  useLayoutEffect(() => {
+    const cached = getCachedMenu(cacheKey);
+    if (!cached) return;
+    hadCacheRef.current = true;
+    setCategories(cached.categories);
+    setBranchInfo(cached.branchInfo);
+    setActiveCategoryId(cached.categories[0]?.id || 0);
+    setStatus("ready");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey]);
 
   const playBeep = () => {
     try {
@@ -119,14 +137,23 @@ export default function MenuPageClient({
         const json = await res.json();
         if (json.success && json.data) {
           setCategories(json.data);
-          setActiveCategoryId(json.data[0]?.id || 0);
+          if (!hadCacheRef.current) {
+            setActiveCategoryId(json.data[0]?.id || 0);
+          }
+          setCachedMenu(cacheKey, {
+            categories: json.data,
+            branchInfo: getCachedMenu(cacheKey)?.branchInfo ?? null,
+            ts: Date.now(),
+          });
         }
         setStatus("ready");
       } catch {
-        setStatus("error");
+        // Cache-dən artıq render olunubsa, səssiz keç — stale data göstərilir.
+        if (!hadCacheRef.current) setStatus("error");
       }
     };
     loadMenu();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, branchSlug, API_BASE]);
 
   // Branch context-də branch logo + sosial link-lər üçün restaurant data fetch
@@ -144,13 +171,36 @@ export default function MenuPageClient({
         const json = await res.json();
         if (json.success && json.data) {
           setBranchInfo(json.data);
+          const existing = getCachedMenu(cacheKey);
+          if (existing) {
+            setCachedMenu(cacheKey, { ...existing, branchInfo: json.data, ts: Date.now() });
+          }
         }
       } catch {
         // ignore — menu render olunmağa davam edir
       }
     };
     loadBranchInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, branchSlug, API_BASE]);
+
+  // Item səhifəsindən qayıdanda saxlanmış scroll pozisiyasını bərpa et.
+  useEffect(() => {
+    if (status !== "ready" || categories.length === 0) return;
+    if (didRestoreScrollRef.current) return;
+    didRestoreScrollRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(scrollKey);
+      if (raw === null) return;
+      sessionStorage.removeItem(scrollKey);
+      const y = Number(raw);
+      if (!Number.isFinite(y) || y <= 0) return;
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, categories]);
 
   useEffect(() => {
     if (!categories.length) return;
@@ -584,7 +634,18 @@ export default function MenuPageClient({
                   );
 
                   return hasVideo ? (
-                    <Link key={item.id} href={itemHref} className={cardClassName}>
+                    <Link
+                      key={item.id}
+                      href={itemHref}
+                      className={cardClassName}
+                      onClick={() => {
+                        try {
+                          sessionStorage.setItem(scrollKey, String(window.scrollY));
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                    >
                       {cardBody}
                     </Link>
                   ) : (
