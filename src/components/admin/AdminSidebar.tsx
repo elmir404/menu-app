@@ -45,6 +45,7 @@ const menuItems = [
   { title: "Kateqoriyalar", href: "/admin/menu/categories", icon: FiGrid },
   { title: "Menyu itemləri", href: "/admin/menu/items", icon: FiList },
   { title: "Filial", href: "/admin/branch", icon: FiMapPin },
+  { title: "Branding", href: "/admin/branding", icon: FiImage },
   { title: "Linklər", href: "/admin/links", icon: FiLink },
   { title: "WiFi", href: "/admin/wifi", icon: FiWifi },
 ];
@@ -120,7 +121,7 @@ export function AdminSidebar() {
                 const Icon = item.icon;
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/admin" && pathname.startsWith(item.href));
+                  (item.href !== "/admin" && pathname.startsWith(item.href + "/"));
 
                 return (
                   <SidebarMenuItem key={item.href}>
