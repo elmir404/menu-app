@@ -51,6 +51,8 @@ export default function BranchAdminPage() {
   const [announcementRu, setAnnouncementRu] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
+  const [announcementFontSize, setAnnouncementFontSize] = useState("");
+  const [defaultMenuView, setDefaultMenuView] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -92,6 +94,10 @@ export default function BranchAdminPage() {
         setAnnouncementRu(b.announcementRu || "");
         setMetaTitle(b.metaTitle || "");
         setMetaDescription(b.metaDescription || "");
+        setAnnouncementFontSize(
+          b.announcementFontSize != null ? String(b.announcementFontSize) : ""
+        );
+        setDefaultMenuView(b.defaultMenuView || "");
       })
       .catch(() => toast.error("Filial məlumatı alınmadı"));
   }, [token, selectedId]);
@@ -168,6 +174,9 @@ export default function BranchAdminPage() {
               announcementRu,
               metaTitle,
               metaDescription,
+              // 0 → sil, dəyər → 10-40 clamp backend-də; "" → sil
+              announcementFontSize: announcementFontSize ? Number(announcementFontSize) : 0,
+              defaultMenuView,
             }
           : {
               backgroundColor: bgColor || null,
@@ -181,6 +190,9 @@ export default function BranchAdminPage() {
               announcementRu,
               metaTitle,
               metaDescription,
+              // 0 → sil, dəyər → 10-40 clamp backend-də; "" → sil
+              announcementFontSize: announcementFontSize ? Number(announcementFontSize) : 0,
+              defaultMenuView,
             };
       await updateBranch(token, current.id, payload);
       toast.success("Yadda saxlanıldı");
@@ -202,6 +214,8 @@ export default function BranchAdminPage() {
     announcementAz,
     announcementEn,
     announcementRu,
+    announcementFontSize,
+    defaultMenuView,
     metaTitle,
     metaDescription,
   ]);
@@ -441,6 +455,41 @@ export default function BranchAdminPage() {
               rows={3}
             />
           </div>
+        </div>
+        <div className="space-y-1.5 sm:max-w-xs">
+          <Label>Elan şrift ölçüsü (px)</Label>
+          <Input
+            type="number"
+            min={10}
+            max={40}
+            value={announcementFontSize}
+            onChange={(e) => setAnnouncementFontSize(e.target.value)}
+            placeholder="məs. 14"
+          />
+          <p className="text-xs text-stone-500">
+            Elan yazısının ölçüsü (10–40 px). Boş = standart.
+          </p>
+        </div>
+      </section>
+
+      {/* Menyu görünüşü */}
+      <section className="space-y-3 rounded-lg border bg-white p-4">
+        <h2 className="text-sm font-semibold text-stone-700">Menyu görünüşü</h2>
+        <div className="space-y-1.5 sm:max-w-xs">
+          <Label>Default görünüş</Label>
+          <select
+            value={defaultMenuView}
+            onChange={(e) => setDefaultMenuView(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="">Standart (tenant ayarı)</option>
+            <option value="grid">Şəbəkə (Grid)</option>
+            <option value="list">Siyahı (List)</option>
+          </select>
+          <p className="text-xs text-stone-500">
+            Bu filialın menyu səhifəsi ilk açılanda hansı görünüşdə olsun. Ziyarətçi yenə dəyişə
+            bilər.
+          </p>
         </div>
       </section>
 

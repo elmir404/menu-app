@@ -26,7 +26,6 @@ export interface Branding {
   textColor: string;
   description: string | null;
   website: string | null;
-  branchNameFontSize?: number | null;
   defaultMenuView?: "grid" | "list" | null;
 }
 
@@ -158,6 +157,10 @@ export interface RestaurantBranchOverride {
   announcementRu: string | null;
   metaTitle: string | null;
   metaDescription: string | null;
+
+  // Görünüş (branch override)
+  announcementFontSize?: number | null;
+  defaultMenuView?: "grid" | "list" | null;
 }
 
 // ─── Public Menu ─────────────────────────────────────────────────────────────
@@ -333,6 +336,8 @@ export interface AdminBranch {
   announcementRu?: string | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  announcementFontSize?: number | null;
+  defaultMenuView?: "grid" | "list" | null;
 }
 
 export interface UpdateBranchPatchRequest {
@@ -348,6 +353,9 @@ export interface UpdateBranchPatchRequest {
   announcementRu?: string | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  // AnnouncementFontSize: 0 → sil; DefaultMenuView: "" → sil
+  announcementFontSize?: number | null;
+  defaultMenuView?: string | null;
 }
 
 export interface BannerVideoUploadResponse {

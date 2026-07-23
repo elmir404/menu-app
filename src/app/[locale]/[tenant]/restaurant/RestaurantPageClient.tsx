@@ -269,14 +269,7 @@ export default function RestaurantPageClient({
                       <FiMapPin className="text-xl" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span
-                        className="block truncate text-base font-semibold text-stone-900"
-                        style={
-                          branding?.branchNameFontSize
-                            ? { fontSize: `${branding.branchNameFontSize}px`, lineHeight: 1.3 }
-                            : undefined
-                        }
-                      >
+                      <span className="block truncate text-base font-semibold text-stone-900">
                         {branch.name}
                         {branch.isMainBranch && (
                           <span className="ml-2 inline-block rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-600">

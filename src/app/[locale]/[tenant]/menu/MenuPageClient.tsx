@@ -49,6 +49,8 @@ export default function MenuPageClient({
   const [viewMode, setViewMode] = useState<"list" | "grid">(
     tenantConfig.branding?.defaultMenuView === "list" ? "list" : "grid"
   );
+  // İstifadəçi toggle edəndən sonra branch default-u tətbiq olunmasın
+  const userToggledViewRef = useRef(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -185,6 +187,13 @@ export default function MenuPageClient({
     loadBranchInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, branchSlug, API_BASE]);
+
+  // Branch-ın öz default görünüşü gələndə tətbiq et (istifadəçi hələ toggle etməyibsə).
+  useEffect(() => {
+    if (userToggledViewRef.current) return;
+    const bv = branchInfo?.branch?.defaultMenuView;
+    if (bv === "grid" || bv === "list") setViewMode(bv);
+  }, [branchInfo]);
 
   // Item səhifəsindən qayıdanda saxlanmış scroll pozisiyasını bərpa et.
   useEffect(() => {
@@ -359,6 +368,12 @@ export default function MenuPageClient({
               backgroundColor: pageFg,
               color: pageBg,
               borderColor: pageFg,
+              ...(branchOverride?.announcementFontSize
+                ? {
+                    fontSize: `${branchOverride.announcementFontSize}px`,
+                    lineHeight: 1.4,
+                  }
+                : {}),
             }}
             role="status"
           >
@@ -467,7 +482,10 @@ export default function MenuPageClient({
                   ? "border-stone-900 bg-stone-900 text-white"
                   : "border-stone-200 bg-white text-stone-700"
               }`}
-              onClick={() => setViewMode("list")}
+              onClick={() => {
+                userToggledViewRef.current = true;
+                setViewMode("list");
+              }}
               aria-label={dict.menu.listView}
             >
               <FiList className="text-base" />
@@ -479,7 +497,10 @@ export default function MenuPageClient({
                   ? "border-stone-900 bg-stone-900 text-white"
                   : "border-stone-200 bg-white text-stone-700"
               }`}
-              onClick={() => setViewMode("grid")}
+              onClick={() => {
+                userToggledViewRef.current = true;
+                setViewMode("grid");
+              }}
               aria-label={dict.menu.gridView}
             >
               <FiGrid className="text-base" />
