@@ -35,6 +35,8 @@ const ADMIN_ALLOWED_ROLES = new Set([
   "Super Admin", // Ehtimal olunan format
   "Branch Admin",
   "BranchAdmin",
+  "Menu Admin",
+  "MenuAdmin",
 ]);
 
 export default auth((req) => {

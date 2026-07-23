@@ -46,7 +46,9 @@ export default function MenuPageClient({
   const [categories, setCategories] = useState<PublicMenuCategory[]>([]);
   const [branchInfo, setBranchInfo] = useState<RestaurantPublic | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [viewMode, setViewMode] = useState<"list" | "grid">(
+    tenantConfig.branding?.defaultMenuView === "list" ? "list" : "grid"
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);

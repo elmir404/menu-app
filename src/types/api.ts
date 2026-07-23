@@ -26,6 +26,8 @@ export interface Branding {
   textColor: string;
   description: string | null;
   website: string | null;
+  branchNameFontSize?: number | null;
+  defaultMenuView?: "grid" | "list" | null;
 }
 
 // ─── WiFi Info ───────────────────────────────────────────────────────────────

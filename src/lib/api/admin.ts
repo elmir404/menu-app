@@ -18,6 +18,7 @@ import type {
   AdminBranch,
   UpdateBranchPatchRequest,
   BannerVideoUploadResponse,
+  AdminBranding,
 } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -421,14 +422,33 @@ export async function uploadBannerVideo(
 
 // ─── Branding ────────────────────────────────────────────────────────────────
 
+export async function getBranding(token: string): Promise<AdminBranding | null> {
+  try {
+    const { data } = await authApi.get<ApiResponse<AdminBranding>>(
+      "/api/TenantBranding/Get",
+      authHeaders(token)
+    );
+    return unwrap(data);
+  } catch {
+    // Branding hələ yaradılmayıbsa 404/boş cavab gələ bilər — form default-larla açılsın
+    return null;
+  }
+}
+
 export async function addBranding(
   token: string,
-  formData: FormData
+  formData: FormData,
+  isSuperAdmin: boolean
 ): Promise<unknown> {
+  // Super Admin → Add (token-də tenant_id olmaya bilər, TenantId formdan gedir);
+  // Tenant Admin / Menu Admin → UpdateMy (TenantId token-dən götürülür)
+  const endpoint = isSuperAdmin
+    ? "/api/TenantBranding/Add"
+    : "/api/TenantBranding/UpdateMy";
   // FormData göndərəndə birbaşa axios.post istifadə edirik ki,
   // avtomatik "multipart/form-data; boundary=..." header-i set olunsun
   const response = await axios.post<ApiResponse<unknown>>(
-    `${API_BASE_URL}/api/TenantBranding/Add`,
+    `${API_BASE_URL}${endpoint}`,
     formData,
     {
       headers: {

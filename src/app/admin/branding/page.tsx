@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useAddBranding } from "@/hooks/use-branding";
+import { useAddBranding, useBranding } from "@/hooks/use-branding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,14 @@ const schema = z.object({
   website: z.string().optional(),
   logoUrl: z.string().optional(),
   backgroundImageUrl: z.string().optional(),
+  branchNameFontSize: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || (/^\d+$/.test(v) && Number(v) >= 10 && Number(v) <= 40),
+      "10–40 px aralığında olmalıdır"
+    ),
+  defaultMenuView: z.enum(["grid", "list"]).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -30,12 +38,14 @@ type FormData = z.infer<typeof schema>;
 export default function BrandingPage() {
   const { data: session } = useSession();
   const addMutation = useAddBranding();
+  const { data: existingBranding } = useBranding();
   const [logoFiles, setLogoFiles] = useState<File[]>([]);
   const [bgFiles, setBgFiles] = useState<File[]>([]);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -44,8 +54,29 @@ export default function BrandingPage() {
       secondaryColor: "#FFFFFF",
       backgroundColor: "#FFFFFF",
       textColor: "#000000",
+      defaultMenuView: "grid",
     },
   });
+
+  // Mövcud branding gələndə formu doldur ki, save mövcud dəyərləri sıfırlamasın
+  useEffect(() => {
+    if (!existingBranding) return;
+    reset({
+      primaryColor: existingBranding.primaryColor || "#000000",
+      secondaryColor: existingBranding.secondaryColor || "#FFFFFF",
+      backgroundColor: existingBranding.backgroundColor || "#FFFFFF",
+      textColor: existingBranding.textColor || "#000000",
+      description: existingBranding.description ?? "",
+      website: existingBranding.website ?? "",
+      logoUrl: "",
+      backgroundImageUrl: "",
+      branchNameFontSize:
+        existingBranding.branchNameFontSize != null
+          ? String(existingBranding.branchNameFontSize)
+          : "",
+      defaultMenuView: existingBranding.defaultMenuView ?? "grid",
+    });
+  }, [existingBranding, reset]);
 
   const onSubmit = async (formData: FormData) => {
     const tenantId = session?.tenantId;
@@ -62,6 +93,13 @@ export default function BrandingPage() {
     fd.append("textColor", formData.textColor || "#000000");
     if (formData.description) fd.append("description", formData.description);
     if (formData.website) fd.append("website", formData.website);
+    // Nullable int binding: boş olanda heç append etmə ("" göndərmək MVC binding-i sındırır)
+    if (formData.branchNameFontSize) {
+      fd.append("branchNameFontSize", String(formData.branchNameFontSize));
+    }
+    if (formData.defaultMenuView) {
+      fd.append("defaultMenuView", formData.defaultMenuView);
+    }
 
     if (logoFiles[0]) {
       fd.append("logoFile", logoFiles[0]);
@@ -160,6 +198,45 @@ export default function BrandingPage() {
                 {...register("website")}
                 placeholder="https://example.com"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Görünüş parametrləri</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Filial adı şrift ölçüsü (px)</Label>
+                <Input
+                  type="number"
+                  min={10}
+                  max={40}
+                  {...register("branchNameFontSize")}
+                  placeholder="16"
+                />
+                {errors.branchNameFontSize && (
+                  <p className="text-xs text-red-500">10–40 px aralığında olmalıdır</p>
+                )}
+                <p className="text-xs text-stone-500">
+                  Restoran səhifəsindəki filial adlarının ölçüsü. Boş = standart.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>Menyu default görünüşü</Label>
+                <select
+                  {...register("defaultMenuView")}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="grid">Şəbəkə (Grid)</option>
+                  <option value="list">Siyahı (List)</option>
+                </select>
+                <p className="text-xs text-stone-500">
+                  Menyu səhifəsi ilk açılanda hansı görünüşdə olsun. Ziyarətçi yenə dəyişə bilər.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
