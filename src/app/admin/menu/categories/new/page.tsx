@@ -28,6 +28,16 @@ const schema = z.object({
   azDescription: z.string().optional(),
   enDescription: z.string().optional(),
   ruDescription: z.string().optional(),
+  descriptionColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Format: #RRGGBB")
+    .optional()
+    .or(z.literal("")),
+  descriptionFontSize: z
+    .string()
+    .regex(/^\d+$/, "Rəqəm daxil edin")
+    .optional()
+    .or(z.literal("")),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -44,6 +54,8 @@ export default function NewCategoryPage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -56,9 +68,14 @@ export default function NewCategoryPage() {
       return;
     }
 
+    const { descriptionColor, descriptionFontSize, ...rest } = formData;
     try {
       await addMutation.mutateAsync({
-        ...formData,
+        ...rest,
+        descriptionColor: descriptionColor || undefined,
+        descriptionFontSize: descriptionFontSize
+          ? Number(descriptionFontSize)
+          : undefined,
         tenantId,
         branchId: scopeToBranchId(branchScope),
       });
@@ -138,6 +155,45 @@ export default function NewCategoryPage() {
                 </>
               }
             />
+
+            <div className="space-y-2">
+              <Label>Təsvir stili (ixtiyari)</Label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={watch("descriptionColor") || "#78716c"}
+                    onChange={(e) =>
+                      setValue("descriptionColor", e.target.value, {
+                        shouldDirty: true,
+                      })
+                    }
+                    className="h-10 w-10 cursor-pointer rounded border"
+                  />
+                  <Input
+                    {...register("descriptionColor")}
+                    placeholder="Rəng: boş = branding default"
+                  />
+                </div>
+                <Input
+                  type="number"
+                  min={10}
+                  max={40}
+                  {...register("descriptionFontSize")}
+                  placeholder="Yazı ölçüsü (px): boş = default"
+                />
+              </div>
+              {errors.descriptionColor && (
+                <p className="text-xs text-red-500">{errors.descriptionColor.message}</p>
+              )}
+              {errors.descriptionFontSize && (
+                <p className="text-xs text-red-500">{errors.descriptionFontSize.message}</p>
+              )}
+              <p className="text-xs text-stone-500">
+                Public menyuda kateqoriya adının altındakı təsvirə aiddir. Boş buraxsanız
+                Branding səhifəsindəki qlobal ayar istifadə olunur.
+              </p>
+            </div>
 
             <div className="flex gap-3">
               <Button type="submit" disabled={addMutation.isPending}>

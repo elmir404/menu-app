@@ -27,6 +27,8 @@ export interface Branding {
   description: string | null;
   website: string | null;
   defaultMenuView?: "grid" | "list" | null;
+  categoryDescriptionColor?: string | null;
+  categoryDescriptionFontSize?: number | null;
 }
 
 // ─── WiFi Info ───────────────────────────────────────────────────────────────
@@ -190,6 +192,9 @@ export interface PublicMenuCategory {
   azDescription: string | null;
   enDescription: string | null;
   ruDescription: string | null;
+  // Optional: köhnə sessionStorage cache girişlərində bu sahələr yoxdur
+  descriptionColor?: string | null;
+  descriptionFontSize?: number | null;
   items: PublicMenuItem[];
 }
 
@@ -228,6 +233,8 @@ export interface AdminMenuCategory {
   azDescription: string | null;
   enDescription: string | null;
   ruDescription: string | null;
+  descriptionColor: string | null;
+  descriptionFontSize: number | null;
   tenantId: number;
   sortOrder: number;
   branchId?: number | null;
@@ -242,6 +249,8 @@ export interface CreateMenuCategoryRequest {
   azDescription?: string;
   enDescription?: string;
   ruDescription?: string;
+  descriptionColor?: string | null;
+  descriptionFontSize?: number | null;
   tenantId: number;
   branchId?: number | null;
 }
@@ -254,6 +263,8 @@ export interface UpdateMenuCategoryRequest {
   azDescription?: string;
   enDescription?: string;
   ruDescription?: string;
+  descriptionColor?: string | null;
+  descriptionFontSize?: number | null;
   branchId?: number | null;
 }
 

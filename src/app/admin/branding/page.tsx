@@ -24,6 +24,16 @@ const schema = z.object({
   logoUrl: z.string().optional(),
   backgroundImageUrl: z.string().optional(),
   defaultMenuView: z.enum(["grid", "list"]).optional(),
+  categoryDescriptionColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Format: #RRGGBB")
+    .optional()
+    .or(z.literal("")),
+  categoryDescriptionFontSize: z
+    .string()
+    .regex(/^\d+$/, "Rəqəm daxil edin")
+    .optional()
+    .or(z.literal("")),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -39,6 +49,8 @@ export default function BrandingPage() {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -64,6 +76,11 @@ export default function BrandingPage() {
       logoUrl: "",
       backgroundImageUrl: "",
       defaultMenuView: existingBranding.defaultMenuView ?? "grid",
+      categoryDescriptionColor: existingBranding.categoryDescriptionColor ?? "",
+      categoryDescriptionFontSize:
+        existingBranding.categoryDescriptionFontSize != null
+          ? String(existingBranding.categoryDescriptionFontSize)
+          : "",
     });
   }, [existingBranding, reset]);
 
@@ -84,6 +101,15 @@ export default function BrandingPage() {
     if (formData.website) fd.append("website", formData.website);
     if (formData.defaultMenuView) {
       fd.append("defaultMenuView", formData.defaultMenuView);
+    }
+    if (formData.categoryDescriptionColor) {
+      fd.append("categoryDescriptionColor", formData.categoryDescriptionColor);
+    }
+    if (formData.categoryDescriptionFontSize) {
+      fd.append(
+        "categoryDescriptionFontSize",
+        formData.categoryDescriptionFontSize
+      );
     }
 
     if (logoFiles[0]) {
@@ -204,6 +230,51 @@ export default function BrandingPage() {
               <p className="text-xs text-stone-500">
                 Bütün filiallar üçün ümumi ayar. Filial öz ayarını Filial səhifəsindən qoyanda o
                 üstünlük təşkil edir.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Kateqoriya təsviri rəngi (default)</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={watch("categoryDescriptionColor") || "#78716c"}
+                    onChange={(e) =>
+                      setValue("categoryDescriptionColor", e.target.value, {
+                        shouldDirty: true,
+                      })
+                    }
+                    className="h-10 w-10 cursor-pointer rounded border"
+                  />
+                  <Input
+                    {...register("categoryDescriptionColor")}
+                    placeholder="Boş = standart"
+                  />
+                </div>
+                {errors.categoryDescriptionColor && (
+                  <p className="text-xs text-red-600">
+                    {errors.categoryDescriptionColor.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Kateqoriya təsviri yazı ölçüsü (px)</Label>
+                <Input
+                  type="number"
+                  min={10}
+                  max={40}
+                  {...register("categoryDescriptionFontSize")}
+                  placeholder="14"
+                />
+                {errors.categoryDescriptionFontSize && (
+                  <p className="text-xs text-red-600">
+                    {errors.categoryDescriptionFontSize.message}
+                  </p>
+                )}
+              </div>
+              <p className="text-xs text-stone-500 sm:col-span-2">
+                Public menyuda kateqoriya adının altındakı təsvirin stili. Kateqoriya
+                səviyyəsində qoyulan stil bu ayarı üstələyir.
               </p>
             </div>
           </CardContent>

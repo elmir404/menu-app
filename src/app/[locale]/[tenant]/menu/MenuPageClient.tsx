@@ -42,6 +42,9 @@ export default function MenuPageClient({
   const dict = useDictionary();
   const currentLocale = useLocale();
   const tenantConfig = useTenant();
+  // Kateqoriya təsviri üçün qlobal stil (kateqoriya öz dəyəri ilə override edə bilər)
+  const globalDescColor = tenantConfig.branding?.categoryDescriptionColor;
+  const globalDescSize = tenantConfig.branding?.categoryDescriptionFontSize;
 
   const [categories, setCategories] = useState<PublicMenuCategory[]>([]);
   const [branchInfo, setBranchInfo] = useState<RestaurantPublic | null>(null);
@@ -531,6 +534,17 @@ export default function MenuPageClient({
               >
                 {getLocalizedName(category, currentLocale)}
               </h2>
+              {getLocalizedDescription(category, currentLocale) && (
+                <p
+                  className="mt-1"
+                  style={{
+                    color: category.descriptionColor ?? globalDescColor ?? "#78716c",
+                    fontSize: `${category.descriptionFontSize ?? globalDescSize ?? 14}px`,
+                  }}
+                >
+                  {getLocalizedDescription(category, currentLocale)}
+                </p>
+              )}
               <div
                 className={`mt-3 ${
                   viewMode === "grid" ? "grid grid-cols-2 gap-3 items-start" : "space-y-3"

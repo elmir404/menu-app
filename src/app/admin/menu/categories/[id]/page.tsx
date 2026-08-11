@@ -30,6 +30,16 @@ const schema = z.object({
   azDescription: z.string().optional(),
   enDescription: z.string().optional(),
   ruDescription: z.string().optional(),
+  descriptionColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Format: #RRGGBB")
+    .optional()
+    .or(z.literal("")),
+  descriptionFontSize: z
+    .string()
+    .regex(/^\d+$/, "Rəqəm daxil edin")
+    .optional()
+    .or(z.literal("")),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -46,6 +56,8 @@ export default function CategoryUpdatePage() {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -60,6 +72,11 @@ export default function CategoryUpdatePage() {
       azDescription: category.azDescription ?? "",
       enDescription: category.enDescription ?? "",
       ruDescription: category.ruDescription ?? "",
+      descriptionColor: category.descriptionColor ?? "",
+      descriptionFontSize:
+        category.descriptionFontSize != null
+          ? String(category.descriptionFontSize)
+          : "",
     });
     setBranchScope(category.branchId == null ? "none" : category.branchId);
   }, [category, reset]);
@@ -76,6 +93,10 @@ export default function CategoryUpdatePage() {
         azDescription: formData.azDescription?.trim() || undefined,
         enDescription: formData.enDescription?.trim() || undefined,
         ruDescription: formData.ruDescription?.trim() || undefined,
+        descriptionColor: formData.descriptionColor || undefined,
+        descriptionFontSize: formData.descriptionFontSize
+          ? Number(formData.descriptionFontSize)
+          : undefined,
         branchId: scopeToBranchId(branchScope),
       });
       toast.success("Kateqoriya uğurla yeniləndi");
@@ -186,6 +207,45 @@ export default function CategoryUpdatePage() {
                 </>
               }
             />
+
+            <div className="space-y-2">
+              <Label>Təsvir stili (ixtiyari)</Label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={watch("descriptionColor") || "#78716c"}
+                    onChange={(e) =>
+                      setValue("descriptionColor", e.target.value, {
+                        shouldDirty: true,
+                      })
+                    }
+                    className="h-10 w-10 cursor-pointer rounded border"
+                  />
+                  <Input
+                    {...register("descriptionColor")}
+                    placeholder="Rəng: boş = branding default"
+                  />
+                </div>
+                <Input
+                  type="number"
+                  min={10}
+                  max={40}
+                  {...register("descriptionFontSize")}
+                  placeholder="Yazı ölçüsü (px): boş = default"
+                />
+              </div>
+              {errors.descriptionColor && (
+                <p className="text-xs text-red-500">{errors.descriptionColor.message}</p>
+              )}
+              {errors.descriptionFontSize && (
+                <p className="text-xs text-red-500">{errors.descriptionFontSize.message}</p>
+              )}
+              <p className="text-xs text-stone-500">
+                Public menyuda kateqoriya adının altındakı təsvirə aiddir. Boş buraxsanız
+                Branding səhifəsindəki qlobal ayar istifadə olunur.
+              </p>
+            </div>
 
             <div className="flex gap-3">
               <Button type="submit" disabled={updateMutation.isPending}>
