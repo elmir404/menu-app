@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { BulkEditCategoriesDialog } from "@/components/admin/BulkEditCategoriesDialog";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
 import {
   useBranchScope,
@@ -53,10 +54,14 @@ function SortableRow({
   cat,
   onDelete,
   draggable,
+  selected,
+  onToggleSelect,
 }: {
   cat: AdminMenuCategory;
   onDelete: (id: number) => void;
   draggable: boolean;
+  selected: boolean;
+  onToggleSelect: (id: number) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: cat.id, disabled: !draggable });
@@ -68,6 +73,15 @@ function SortableRow({
   };
   return (
     <TableRow ref={setNodeRef} style={style}>
+      <TableCell className="w-10">
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => onToggleSelect(cat.id)}
+          className="size-4 cursor-pointer accent-stone-800"
+          aria-label={`${cat.azName} seç`}
+        />
+      </TableCell>
       <TableCell
         className={`w-10 touch-none ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
         {...(draggable ? attributes : {})}
@@ -115,6 +129,8 @@ export default function CategoriesPage() {
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [items, setItems] = useState<AdminMenuCategory[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const tenantId = session?.tenantId ?? 0;
 
@@ -140,6 +156,38 @@ export default function CategoriesPage() {
   useEffect(() => {
     setItems(filtered);
   }, [filtered]);
+
+  // Filtr/axtarış dəyişəndə görünməyən sətirlərin seçimi düşsün
+  useEffect(() => {
+    setSelected((prev) => {
+      const visible = new Set(filtered.map((c) => c.id));
+      const next = new Set([...prev].filter((id) => visible.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [filtered]);
+
+  const toggleSelect = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allVisibleSelected =
+    items.length > 0 && items.every((c) => selected.has(c.id));
+
+  const toggleSelectAll = () => {
+    setSelected(
+      allVisibleSelected ? new Set() : new Set(items.map((c) => c.id))
+    );
+  };
+
+  const selectedCategories = useMemo(
+    () => (categories ?? []).filter((c) => selected.has(c.id)),
+    [categories, selected]
+  );
 
   const handleDelete = async () => {
     if (deleteId === null) return;
@@ -214,6 +262,22 @@ export default function CategoriesPage() {
         )}
       </div>
 
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2">
+          <span className="text-sm text-stone-700">{selected.size} seçilib</span>
+          <Button size="sm" onClick={() => setBulkOpen(true)}>
+            Toplu redaktə
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelected(new Set())}
+          >
+            Seçimi sıfırla
+          </Button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -225,6 +289,15 @@ export default function CategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAll}
+                    className="size-4 cursor-pointer accent-stone-800"
+                    aria-label="Hamısını seç"
+                  />
+                </TableHead>
                 <TableHead className="w-10"></TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>AZ</TableHead>
@@ -237,7 +310,7 @@ export default function CategoriesPage() {
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-stone-500">
+                  <TableCell colSpan={8} className="text-center text-stone-500">
                     Kateqoriya tapılmadı
                   </TableCell>
                 </TableRow>
@@ -257,6 +330,8 @@ export default function CategoriesPage() {
                         cat={cat}
                         onDelete={setDeleteId}
                         draggable={dragEnabled}
+                        selected={selected.has(cat.id)}
+                        onToggleSelect={toggleSelect}
                       />
                     ))}
                   </SortableContext>
@@ -266,6 +341,13 @@ export default function CategoriesPage() {
           </Table>
         </div>
       )}
+
+      <BulkEditCategoriesDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        categories={selectedCategories}
+        onSuccess={() => setSelected(new Set())}
+      />
 
       <ConfirmDialog
         open={deleteId !== null}

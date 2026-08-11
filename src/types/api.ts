@@ -268,6 +268,20 @@ export interface UpdateMenuCategoryRequest {
   branchId?: number | null;
 }
 
+// Toplu redaktə: yalnız dolu sahələr göndərilir, göndərilməyən sahə backend-də toxunulmur
+export interface BulkUpdateMenuCategoryRequest {
+  tenantId: number;
+  ids: number[];
+  azName?: string;
+  enName?: string;
+  ruName?: string;
+  azDescription?: string;
+  enDescription?: string;
+  ruDescription?: string;
+  descriptionColor?: string;
+  descriptionFontSize?: number;
+}
+
 // ─── Admin: Menu Item ────────────────────────────────────────────────────────
 export interface MenuItemImage {
   id: number;

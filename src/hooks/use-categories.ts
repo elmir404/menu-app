@@ -9,11 +9,13 @@ import {
   updateCategory,
   deleteCategory,
   reorderCategories,
+  bulkUpdateCategories,
   type ReorderMenuRequest,
 } from "@/lib/api/admin";
 import type {
   CreateMenuCategoryRequest,
   UpdateMenuCategoryRequest,
+  BulkUpdateMenuCategoryRequest,
 } from "@/types/api";
 
 export function useCategories(tenantId?: number) {
@@ -74,6 +76,20 @@ export function useDeleteCategory() {
 
   return useMutation({
     mutationFn: (id: number) => deleteCategory(token, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+export function useBulkUpdateCategories() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const token = session?.accessToken ?? "";
+
+  return useMutation({
+    mutationFn: (body: BulkUpdateMenuCategoryRequest) =>
+      bulkUpdateCategories(token, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },

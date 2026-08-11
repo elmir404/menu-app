@@ -8,6 +8,7 @@ import type {
   WifiInfo,
   CreateMenuCategoryRequest,
   UpdateMenuCategoryRequest,
+  BulkUpdateMenuCategoryRequest,
   CreateMenuItemRequest,
   CreateWifiRequest,
   UpdateWifiRequest,
@@ -93,6 +94,17 @@ export async function deleteCategory(
   id: number
 ): Promise<void> {
   await authApi.delete(`/api/MenuCategory/Delete/${id}`, authHeaders(token));
+}
+
+export async function bulkUpdateCategories(
+  token: string,
+  body: BulkUpdateMenuCategoryRequest
+): Promise<void> {
+  await authApi.post(
+    "/api/MenuCategory/BulkUpdate",
+    body,
+    authHeaders(token)
+  );
 }
 
 export interface ReorderMenuRequest {
