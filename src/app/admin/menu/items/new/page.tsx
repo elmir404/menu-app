@@ -9,6 +9,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useAddMenuItem, useMenuItems } from "@/hooks/use-menu-items";
 import { useCategories } from "@/hooks/use-categories";
+import { useBranches } from "@/hooks/use-branches";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +38,7 @@ const schema = z.object({
   azDescription: z.string().optional().nullable(),
   enDescription: z.string().optional().nullable(),
   ruDescription: z.string().optional().nullable(),
-  price: z.number().min(0.01, "Qiymət tələb olunur"),
+  price: z.number().min(0, "Qiymət tələb olunur"),
   discountPrice: z.number().min(0).optional(),
   currency: z.string().min(1, "Valyuta tələb olunur"),
   currencySign: z.string().min(1, "Valyuta simvolu tələb olunur"),
@@ -53,12 +54,16 @@ export default function NewMenuItemPage() {
   // Tenant claim olmayan (superadmin) hesabda parametrsiz kateqoriya sorğusu 400 qaytarır.
   const { data: categories } = useCategories(session?.tenantId || undefined);
   const addMutation = useAddMenuItem();
-  const { scope } = useBranchScope();
+  const { scope, locked } = useBranchScope();
+  const { data: branches } = useBranches();
   const [files, setFiles] = useState<File[]>([]);
   const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
   const [branchScope, setBranchScope] = useState<BranchScope>(
     scope === "all" ? "none" : scope
   );
+  // Multi-filial rejim: seçilmiş filialların hamısında ayrıca item yaradılır (qiymət default 0)
+  const [multiBranch, setMultiBranch] = useState(false);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<number[]>([]);
 
   const tenantId = session?.tenantId ?? 0;
   const tenantCategories = useMemo(
@@ -75,12 +80,16 @@ export default function NewMenuItemPage() {
   // Yeni yaradılan filial kateqoriyası dərhal görünür (item olmasa da).
   const scopedCategories = useMemo(
     () =>
-      tenantCategories.filter(
-        (c) =>
+      tenantCategories.filter((c) => {
+        // Multi-filial rejimdə yalnız Ümumi (filialsız) kateqoriyalar keçərlidir —
+        // filial-spesifik kateqoriya başqa filialın item-inə uyğun gəlmir.
+        if (multiBranch) return c.branchId == null;
+        return (
           c.branchId == null ||
           (typeof branchScope === "number" && c.branchId === branchScope)
-      ),
-    [tenantCategories, branchScope]
+        );
+      }),
+    [tenantCategories, branchScope, multiBranch]
   );
 
   const {
@@ -141,9 +150,18 @@ export default function NewMenuItemPage() {
     fd.append("discountPrice", String(formData.discountPrice || 0));
     fd.append("menuCategoryId", String(formData.menuCategoryId));
 
-    // branchId yalnız konkret filial seçildikdə göndərilir; null = Ümumi (tenant-wide)
-    const branchId = scopeToBranchId(branchScope);
-    if (branchId != null) fd.append("branchId", String(branchId));
+    if (multiBranch) {
+      // Multi-filial: hər seçilmiş filial üçün ayrıca item yaradılır
+      if (selectedBranchIds.length === 0) {
+        toast.error("Ən azı bir filial seçin");
+        return;
+      }
+      selectedBranchIds.forEach((id) => fd.append("branchIds", String(id)));
+    } else {
+      // branchId yalnız konkret filial seçildikdə göndərilir; null = Ümumi (tenant-wide)
+      const branchId = scopeToBranchId(branchScope);
+      if (branchId != null) fd.append("branchId", String(branchId));
+    }
 
     // Şəkilləri əlavə et (multiple files)
     files.forEach((file) => {
@@ -156,7 +174,11 @@ export default function NewMenuItemPage() {
 
     try {
       await addMutation.mutateAsync(fd);
-      toast.success("Menyu itemi əlavə edildi");
+      toast.success(
+        multiBranch
+          ? `Məhsul ${selectedBranchIds.length} filiala əlavə edildi`
+          : "Menyu itemi əlavə edildi"
+      );
       router.push("/admin/menu/items");
     } catch (error: any) {
       const errorMessage =
@@ -235,17 +257,87 @@ export default function NewMenuItemPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Filial</Label>
-              <BranchScopeSelect
-                className="w-full sm:w-[260px]"
-                value={branchScope}
-                onChange={(s) => {
-                  setBranchScope(s);
-                  setValue("menuCategoryId", 0); // filial dəyişdi → kateqoriyanı yenidən seç
-                }}
-              />
-              <p className="text-xs text-stone-500">
-                &quot;Ümumi&quot; bütün filiallarda görünür.
-              </p>
+              {!locked && (
+                <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-stone-900"
+                    checked={multiBranch}
+                    onChange={(e) => {
+                      const on = e.target.checked;
+                      setMultiBranch(on);
+                      setValue("menuCategoryId", 0); // rejim dəyişdi → kateqoriyanı yenidən seç
+                      if (on) setValue("price", 0); // multi rejimdə qiymət default 0
+                    }}
+                  />
+                  Bir neçə filiala əlavə et
+                </label>
+              )}
+
+              {multiBranch ? (
+                <div className="space-y-2 rounded-lg border border-stone-200 p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-stone-600">
+                      Filialları seçin ({selectedBranchIds.length} seçildi)
+                    </p>
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-stone-900 underline"
+                      onClick={() => {
+                        const all = (branches ?? []).map((b) => b.id);
+                        setSelectedBranchIds(
+                          selectedBranchIds.length === all.length ? [] : all
+                        );
+                      }}
+                    >
+                      {selectedBranchIds.length === (branches ?? []).length
+                        ? "Hamısını çıxar"
+                        : "Hamısını seç"}
+                    </button>
+                  </div>
+                  <div className="grid gap-1.5 sm:grid-cols-2">
+                    {(branches ?? []).map((b) => (
+                      <label
+                        key={b.id}
+                        className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-stone-50"
+                      >
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-stone-900"
+                          checked={selectedBranchIds.includes(b.id)}
+                          onChange={(e) =>
+                            setSelectedBranchIds((prev) =>
+                              e.target.checked
+                                ? [...prev, b.id]
+                                : prev.filter((id) => id !== b.id)
+                            )
+                          }
+                        />
+                        {b.name}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-stone-500">
+                    Məhsul seçilmiş filialların hamısında yaradılacaq. Qiyməti sonra hər
+                    filialda ayrıca dəyişə bilərsiniz. Yalnız &quot;Ümumi&quot; kateqoriyalar
+                    seçilə bilər.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <BranchScopeSelect
+                    className="w-full sm:w-[260px]"
+                    value={branchScope}
+                    onChange={(s) => {
+                      setBranchScope(s);
+                      setValue("menuCategoryId", 0); // filial dəyişdi → kateqoriyanı yenidən seç
+                    }}
+                  />
+                  <p className="text-xs text-stone-500">
+                    &quot;Ümumi&quot; bütün filiallarda görünür.
+                  </p>
+                </>
+              )}
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
