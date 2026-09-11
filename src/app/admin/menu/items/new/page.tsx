@@ -78,19 +78,25 @@ export default function NewMenuItemPage() {
   );
   // Seçilmiş filialın kateqoriyaları: filial-spesifik (branchId===scope) + Ümumi(null).
   // Yeni yaradılan filial kateqoriyası dərhal görünür (item olmasa da).
-  const scopedCategories = useMemo(
-    () =>
-      tenantCategories.filter((c) => {
-        // Multi-filial rejimdə yalnız Ümumi (filialsız) kateqoriyalar keçərlidir —
-        // filial-spesifik kateqoriya başqa filialın item-inə uyğun gəlmir.
-        if (multiBranch) return c.branchId == null;
-        return (
-          c.branchId == null ||
-          (typeof branchScope === "number" && c.branchId === branchScope)
-        );
-      }),
-    [tenantCategories, branchScope, multiBranch]
-  );
+  const scopedCategories = useMemo(() => {
+    // Multi-filial rejimdə bütün kateqoriyalar seçilə bilər — backend hər filialda
+    // eyni adlı kateqoriyanı tapır, yoxdursa kopyasını yaradır. Eyni adlı filial
+    // kopyaları siyahıda təkrarlanmasın deyə AzName üzrə dedupe (Ümumi variant üstün).
+    if (multiBranch) {
+      const byName = new Map<string, (typeof tenantCategories)[number]>();
+      for (const c of tenantCategories) {
+        const key = (c.azName ?? "").trim().toLowerCase();
+        const cur = byName.get(key);
+        if (!cur || (cur.branchId != null && c.branchId == null)) byName.set(key, c);
+      }
+      return [...byName.values()];
+    }
+    return tenantCategories.filter(
+      (c) =>
+        c.branchId == null ||
+        (typeof branchScope === "number" && c.branchId === branchScope)
+    );
+  }, [tenantCategories, branchScope, multiBranch]);
 
   const {
     register,
@@ -319,8 +325,8 @@ export default function NewMenuItemPage() {
                   </div>
                   <p className="text-xs text-stone-500">
                     Məhsul seçilmiş filialların hamısında yaradılacaq. Qiyməti sonra hər
-                    filialda ayrıca dəyişə bilərsiniz. Yalnız &quot;Ümumi&quot; kateqoriyalar
-                    seçilə bilər.
+                    filialda ayrıca dəyişə bilərsiniz. Seçilmiş kateqoriya hansısa filialda
+                    yoxdursa, orada avtomatik yaradılacaq.
                   </p>
                 </div>
               ) : (
