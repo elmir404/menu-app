@@ -481,3 +481,19 @@ export interface ResendOtpResponse {
   otpSent: boolean;
   purpose: string;
 }
+
+/** QR menyu açılanda göstərilən kampaniya popup-u (GET /api/public/menu-popup/{tenantSlug}) */
+export interface PublicMenuPopup {
+  imageUrl?: string | null;
+  azTitle?: string | null;
+  enTitle?: string | null;
+  ruTitle?: string | null;
+  azDescription?: string | null;
+  enDescription?: string | null;
+  ruDescription?: string | null;
+  ctaEnabled: boolean;
+  ctaUrl?: string | null;
+  azCtaText?: string | null;
+  enCtaText?: string | null;
+  ruCtaText?: string | null;
+}

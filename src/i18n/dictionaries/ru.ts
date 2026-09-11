@@ -196,6 +196,9 @@ const ru: Dictionary = {
       "Страница заказа скоро будет готова. Здесь будут сводка заказа и оплата.",
     backToMenu: "Вернуться в меню",
   },
+  campaign: {
+    goToLoyalty: "Перейти",
+  },
 };
 
 export default ru;

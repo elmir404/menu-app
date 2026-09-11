@@ -112,4 +112,7 @@ export interface Dictionary {
     description: string;
     backToMenu: string;
   };
+  campaign: {
+    goToLoyalty: string;
+  };
 }

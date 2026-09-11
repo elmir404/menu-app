@@ -8,6 +8,7 @@ import RestaurantHeader from "@/components/RestaurantHeader";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import CheckoutModal from "@/components/CheckoutModal";
+import CampaignPopup from "@/components/CampaignPopup";
 import ItemDetailDrawer from "./ItemDetailDrawer";
 import { useDictionary } from "@/components/providers/LocaleProvider";
 import { useLocale } from "@/components/providers/LocaleProvider";
@@ -746,6 +747,8 @@ export default function MenuPageClient({
           if (!open) setDrawerItem(null);
         }}
       />
+
+      <CampaignPopup tenantSlug={tenantSlug} locale={currentLocale} />
 
     </div>
   );

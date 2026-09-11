@@ -193,6 +193,9 @@ const en: Dictionary = {
     description: "Checkout page is next. We will add order summary and payment here.",
     backToMenu: "Back to menu",
   },
+  campaign: {
+    goToLoyalty: "Join now",
+  },
 };
 
 export default en;

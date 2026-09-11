@@ -194,6 +194,9 @@ const az: Dictionary = {
     description: "Sifariş səhifəsi tezliklə. Sifariş xülasəsi və ödəniş burada olacaq.",
     backToMenu: "Menyuya qayıt",
   },
+  campaign: {
+    goToLoyalty: "Keçid et",
+  },
 };
 
 export default az;
