@@ -38,6 +38,8 @@ export interface WifiInfo {
   ssid: string;
   tenantId?: number;
   tenant?: unknown;
+  branchId?: number | null;
+  branchName?: string | null;
 }
 
 // ─── Tenant Config (single tenant detail — public) ──────────────────────────
@@ -333,6 +335,7 @@ export interface CreateWifiRequest {
   password: string;
   ssid: string;
   tenantId: number;
+  branchId?: number | null;
 }
 
 export interface UpdateWifiRequest {
@@ -340,6 +343,7 @@ export interface UpdateWifiRequest {
   password: string;
   ssid: string;
   tenantId: number;
+  branchId?: number | null;
 }
 
 // ─── Admin: Branch ───────────────────────────────────────────────────────────

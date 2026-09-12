@@ -12,6 +12,15 @@ import {
   useUpdateWifi,
   useDeleteWifi,
 } from "@/hooks/use-wifi";
+import { useBranches } from "@/hooks/use-branches";
+import { useBranchScope } from "@/contexts/BranchScopeContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +57,15 @@ export default function WifiPage() {
 
   const tenantId = session?.tenantId ?? 0;
 
+  // Filial seçimi: "none" = Ümumi (bütün filiallar), number = konkret filial.
+  // Branch-locked adminlərdə seçici gizlədilir (backend onsuz da öz filialına məcbur edir).
+  const { locked } = useBranchScope();
+  const { data: branches } = useBranches();
+  const [addBranch, setAddBranch] = useState<string>("none");
+  const [editBranch, setEditBranch] = useState<string>("none");
+  const branchName = (id: number | null | undefined) =>
+    id == null ? null : (branches ?? []).find((b) => b.id === id)?.name ?? `#${id}`;
+
   // Add form
   const addForm = useForm<WifiFormData>({
     resolver: zodResolver(wifiSchema),
@@ -60,12 +78,17 @@ export default function WifiPage() {
 
   const handleAdd = async (data: WifiFormData) => {
     try {
-      await addMutation.mutateAsync({ ...data, tenantId });
+      await addMutation.mutateAsync({
+        ...data,
+        tenantId,
+        branchId: addBranch === "none" ? null : Number(addBranch),
+      });
       toast.success("WiFi əlavə edildi");
       addForm.reset();
+      setAddBranch("none");
       setShowAdd(false);
-    } catch {
-      toast.error("Xəta baş verdi");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Xəta baş verdi");
     }
   };
 
@@ -76,11 +99,12 @@ export default function WifiPage() {
         id: editItem.id,
         ...data,
         tenantId,
+        branchId: editBranch === "none" ? null : Number(editBranch),
       });
       toast.success("WiFi yeniləndi");
       setEditItem(null);
-    } catch {
-      toast.error("Xəta baş verdi");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Xəta baş verdi");
     }
   };
 
@@ -97,8 +121,31 @@ export default function WifiPage() {
 
   const openEdit = (wifi: WifiInfo) => {
     setEditItem(wifi);
+    setEditBranch(wifi.branchId == null ? "none" : String(wifi.branchId));
     editForm.reset({ ssid: wifi.ssid, password: wifi.password });
   };
+
+  const branchSelect = (value: string, onChange: (v: string) => void) => (
+    <div className="space-y-2">
+      <Label>Filial</Label>
+      <Select value={value} onValueChange={(v) => v && onChange(v)}>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Ümumi (bütün filiallar)</SelectItem>
+          {(branches ?? []).map((b) => (
+            <SelectItem key={b.id} value={String(b.id)}>
+              {b.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <p className="text-xs text-stone-500">
+        Filial seçilsə WiFi yalnız həmin filialın menyusunda görünür.
+      </p>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -154,6 +201,9 @@ export default function WifiPage() {
                 <p className="font-mono text-sm text-stone-900">
                   {wifi.password}
                 </p>
+                <p className="mt-2 inline-block rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+                  {wifi.branchName ?? branchName(wifi.branchId) ?? "Ümumi"}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -185,6 +235,7 @@ export default function WifiPage() {
                 </p>
               )}
             </div>
+            {!locked && branchSelect(addBranch, setAddBranch)}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowAdd(false)}>
                 Ləğv et
@@ -222,6 +273,7 @@ export default function WifiPage() {
                 </p>
               )}
             </div>
+            {!locked && branchSelect(editBranch, setEditBranch)}
             <DialogFooter>
               <Button
                 type="button"
