@@ -207,6 +207,22 @@ export async function addMenuItem(
   return unwrap(response.data);
 }
 
+export async function bulkUpdateMenuItems(
+  token: string,
+  formData: FormData
+): Promise<{ updatedCount: number }> {
+  const response = await axios.post<ApiResponse<{ updatedCount: number }>>(
+    `${API_BASE_URL}/api/MenuItem/BulkUpdate`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return unwrap(response.data);
+}
+
 export async function updateMenuItem(
   token: string,
   id: number,

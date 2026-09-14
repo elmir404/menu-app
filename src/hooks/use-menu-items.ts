@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import {
+  bulkUpdateMenuItems,
   getMenuItems,
   getMenuItemByIdWithDetails,
   addMenuItem,
@@ -98,6 +99,19 @@ export function useReorderMenuItems() {
 
   return useMutation({
     mutationFn: (body: ReorderMenuRequest) => reorderMenuItems(token, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menuItems"] });
+    },
+  });
+}
+
+export function useBulkUpdateMenuItems() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const token = session?.accessToken ?? "";
+
+  return useMutation({
+    mutationFn: (formData: FormData) => bulkUpdateMenuItems(token, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["menuItems"] });
     },

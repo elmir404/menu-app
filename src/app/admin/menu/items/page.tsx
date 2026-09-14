@@ -32,6 +32,7 @@ import {
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ZoomableImage } from "@/components/admin/ZoomableImage";
 import { BranchScopeSelect } from "@/components/admin/BranchScopeSelect";
+import { BulkEditItemsDialog } from "@/components/admin/BulkEditItemsDialog";
 import {
   useBranchScope,
   matchesBranchScope,
@@ -89,6 +90,8 @@ function SortableRow({
   onSavePrice,
   saving,
   draggable,
+  selected,
+  onToggleSelect,
 }: {
   item: AdminMenuItem;
   thumb: string | null;
@@ -98,6 +101,8 @@ function SortableRow({
   onSavePrice: (item: AdminMenuItem, price: number) => void;
   saving: boolean;
   draggable: boolean;
+  selected: boolean;
+  onToggleSelect: (id: number) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id, disabled: !draggable });
@@ -126,6 +131,14 @@ function SortableRow({
   };
   return (
     <TableRow ref={setNodeRef} style={style}>
+      <TableCell className="w-8" onPointerDown={(e) => e.stopPropagation()}>
+        <input
+          type="checkbox"
+          className="size-4 accent-stone-900"
+          checked={selected}
+          onChange={() => onToggleSelect(item.id)}
+        />
+      </TableCell>
       <TableCell
         className={`w-10 touch-none ${draggable ? "cursor-grab" : "cursor-not-allowed"}`}
         {...(draggable ? attributes : {})}
@@ -255,6 +268,16 @@ export default function MenuItemsPage() {
   });
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [items, setItems] = useState<AdminMenuItem[]>([]);
+  // Toplu redaktə seçimi
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const toggleSelect = (id: number) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const tenantId = session?.tenantId ?? 0;
 
@@ -414,6 +437,27 @@ export default function MenuItemsPage() {
         </Button>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2">
+          <span className="text-sm font-medium text-stone-700">
+            {selectedIds.size} seçildi
+          </span>
+          <Button size="sm" onClick={() => setBulkOpen(true)}>
+            Toplu redaktə
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            Təmizlə
+          </Button>
+        </div>
+      )}
+
+      <BulkEditItemsDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        items={(menuItems ?? []).filter((i) => selectedIds.has(i.id))}
+        onSuccess={() => setSelectedIds(new Set())}
+      />
+
       <div className="flex flex-col gap-3 sm:flex-row">
         <Input
           placeholder="Axtar..."
@@ -458,6 +502,21 @@ export default function MenuItemsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-stone-900"
+                    checked={items.length > 0 && selectedIds.size === items.length}
+                    onChange={() =>
+                      setSelectedIds((prev) =>
+                        prev.size === items.length
+                          ? new Set()
+                          : new Set(items.map((i) => i.id))
+                      )
+                    }
+                    title="Hamısını seç (filtrlənmiş)"
+                  />
+                </TableHead>
                 <TableHead className="w-10"></TableHead>
                 <TableHead>Şəkil</TableHead>
                 <TableHead>Ad (AZ)</TableHead>
@@ -499,6 +558,8 @@ export default function MenuItemsPage() {
                           onSavePrice={handleSavePrice}
                           saving={savingPriceId === item.id}
                           draggable={dragEnabled}
+                          selected={selectedIds.has(item.id)}
+                          onToggleSelect={toggleSelect}
                         />
                       );
                     })}
