@@ -357,6 +357,21 @@ export default function MenuItemsPage() {
     setItems(filtered);
   }, [filtered]);
 
+  // Pagination: yüzlərlə sortable sətrin birdən renderi səhifəni dondururdu.
+  const PAGE_SIZE = 50;
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  useEffect(() => {
+    setPage(1); // filtr/axtarış dəyişəndə birinci səhifəyə qayıt
+  }, [search, scope, categoryFilter]);
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+  const pagedItems = useMemo(
+    () => items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [items, page]
+  );
+
   // Drag yalnız tək kateqoriya VƏ tək filial scope seçildikdə aktiv (qarışıq
   // kateqoriya/filial üzrə cross-reorder backend tərəfindən qadağandır).
   const dragEnabled = categoryFilter !== "all" && scope !== "all";
@@ -540,10 +555,10 @@ export default function MenuItemsPage() {
                   onDragEnd={handleDragEnd}
                 >
                   <SortableContext
-                    items={items.map((i) => i.id)}
+                    items={pagedItems.map((i) => i.id)}
                     strategy={verticalListSortingStrategy}
                   >
-                    {items.map((item) => {
+                    {pagedItems.map((item) => {
                       const thumb = item.menuItemImages?.[0]?.path
                         ? getMediaUrl(item.menuItemImages[0].path)
                         : null;
@@ -568,6 +583,30 @@ export default function MenuItemsPage() {
               )}
             </TableBody>
           </Table>
+        </div>
+      )}
+
+      {pageCount > 1 && (
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            ‹ Əvvəlki
+          </Button>
+          <span className="text-sm text-stone-600">
+            Səhifə {page} / {pageCount} (cəmi {items.length} item)
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= pageCount}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Növbəti ›
+          </Button>
         </div>
       )}
 
