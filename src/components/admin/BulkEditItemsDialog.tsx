@@ -15,14 +15,22 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useBulkUpdateMenuItems } from "@/hooks/use-menu-items";
-import type { AdminMenuItem } from "@/types/api";
+import type { AdminMenuCategory, AdminMenuItem } from "@/types/api";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   items: AdminMenuItem[]; // seçilmiş itemlər
+  categories: AdminMenuCategory[]; // filial scope-una uyğun kateqoriyalar
   onSuccess: () => void;
 }
 
@@ -31,7 +39,7 @@ interface Props {
  * Şəkillər yüklənsə, itemlərin bütün köhnə şəkilləri bunlarla ƏVƏZ olunur.
  * Qiymət/endirim yalnız bilərəkdən doldurulduqda dəyişir.
  */
-export function BulkEditItemsDialog({ open, onOpenChange, items, onSuccess }: Props) {
+export function BulkEditItemsDialog({ open, onOpenChange, items, categories, onSuccess }: Props) {
   const { data: session } = useSession();
   const bulkMutation = useBulkUpdateMenuItems();
 
@@ -42,6 +50,7 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, onSuccess }: Pr
   const [enDescription, setEnDescription] = useState("");
   const [ruDescription, setRuDescription] = useState("");
   const [prepTime, setPrepTime] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -51,7 +60,7 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, onSuccess }: Pr
   const reset = () => {
     setAzName(""); setEnName(""); setRuName("");
     setAzDescription(""); setEnDescription(""); setRuDescription("");
-    setPrepTime(""); setPrice(""); setDiscountPrice("");
+    setPrepTime(""); setCategoryId(""); setPrice(""); setDiscountPrice("");
     setFiles([]); setVideoFile(null); setRemoveVideo(false);
   };
 
@@ -70,6 +79,7 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, onSuccess }: Pr
     put("enDescription", enDescription);
     put("ruDescription", ruDescription);
     put("prepTimeMinutes", prepTime);
+    if (categoryId) fd.append("menuCategoryId", categoryId);
     // Qiymət yalnız bilərəkdən doldurulanda göndərilir
     if (price.trim() && Number.isFinite(parseFloat(price)))
       fd.append("price", parseFloat(price.replace(",", ".")).toFixed(2));
@@ -128,6 +138,34 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, onSuccess }: Pr
               <Textarea value={ruDescription} onChange={(e) => setRuDescription(e.target.value)} placeholder="оставьте пустым" />
             </TabsContent>
           </Tabs>
+
+          <div className="space-y-1.5">
+            <Label>Kateqoriya</Label>
+            <Select
+              value={categoryId}
+              onValueChange={(val) => {
+                if (!val) return; // Radix boş value atır — dəyəri sıfırlamasın
+                setCategoryId(val);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="dəyişməsin" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.azName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {categoryId && (
+              <p className="text-xs text-amber-600">
+                Seçilmiş itemlər bu kateqoriyaya köçürüləcək. Filial-spesifik
+                kateqoriyaya yalnız həmin filialın itemləri köçür.
+              </p>
+            )}
+          </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">

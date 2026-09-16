@@ -470,6 +470,7 @@ export default function MenuItemsPage() {
         open={bulkOpen}
         onOpenChange={setBulkOpen}
         items={(menuItems ?? []).filter((i) => selectedIds.has(i.id))}
+        categories={scopedCategories}
         onSuccess={() => setSelectedIds(new Set())}
       />
 
