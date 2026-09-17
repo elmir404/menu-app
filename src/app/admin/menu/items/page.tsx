@@ -312,6 +312,24 @@ export default function MenuItemsPage() {
     );
   }, [tenantCategories, tenantCategoryIds, menuItems, scope]);
 
+  // catId → normallaşdırılmış ad (ad üzrə qruplaşma/filtr üçün)
+  const catNameById = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const c of tenantCategories) m.set(c.id, (c.azName ?? "").trim().toLowerCase());
+    return m;
+  }, [tenantCategories]);
+
+  // Filter dropdownu ad üzrə dedupe (Ümumi/branchId==null üstün) — eyni ad bir dəfə (məs. Şorbalar 1 dəfə)
+  const dedupedScopedCategories = useMemo(() => {
+    const byName = new Map<string, (typeof scopedCategories)[number]>();
+    for (const c of scopedCategories) {
+      const key = (c.azName ?? "").trim().toLowerCase();
+      const cur = byName.get(key);
+      if (!cur || (cur.branchId != null && c.branchId == null)) byName.set(key, c);
+    }
+    return [...byName.values()];
+  }, [scopedCategories]);
+
   // Kateqoriya filtrini persist et (naviqasiyadan sonra qalsın)
   useEffect(() => {
     try {
@@ -345,12 +363,14 @@ export default function MenuItemsPage() {
             item.azName.toLowerCase().includes(search.toLowerCase()) ||
             item.enName.toLowerCase().includes(search.toLowerCase())
         )
-        .filter((item) =>
-          categoryFilter === "all"
-            ? true
-            : item.menuCategoryId === Number(categoryFilter)
-        ),
-    [menuItems, tenantCategoryIds, scope, search, categoryFilter]
+        .filter((item) => {
+          if (categoryFilter === "all") return true;
+          // Ad üzrə uyğunluq — eyni adlı bütün filial kateqoriyaları qruplanır
+          const selName = catNameById.get(Number(categoryFilter));
+          if (selName == null) return item.menuCategoryId === Number(categoryFilter);
+          return catNameById.get(item.menuCategoryId) === selName;
+        }),
+    [menuItems, tenantCategoryIds, scope, search, categoryFilter, catNameById]
   );
 
   useEffect(() => {
@@ -493,7 +513,7 @@ export default function MenuItemsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Hamısı (sıralama deaktiv)</SelectItem>
-            {scopedCategories.map((cat) => (
+            {dedupedScopedCategories.map((cat) => (
               <SelectItem key={cat.id} value={String(cat.id)}>
                 {cat.azName}
               </SelectItem>
