@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -51,16 +51,28 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, categories, onS
   const [ruDescription, setRuDescription] = useState("");
   const [prepTime, setPrepTime] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [applyPerBranch, setApplyPerBranch] = useState(true);
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [removeVideo, setRemoveVideo] = useState(false);
 
+  // Kateqoriyaları ad üzrə dedupe et (Ümumi/branchId==null üstün) — filial dublikatları bir sətir.
+  const dedupedCategories = useMemo(() => {
+    const byName = new Map<string, AdminMenuCategory>();
+    for (const c of categories) {
+      const key = (c.azName ?? "").trim().toLowerCase();
+      const cur = byName.get(key);
+      if (!cur || (cur.branchId != null && c.branchId == null)) byName.set(key, c);
+    }
+    return [...byName.values()];
+  }, [categories]);
+
   const reset = () => {
     setAzName(""); setEnName(""); setRuName("");
     setAzDescription(""); setEnDescription(""); setRuDescription("");
-    setPrepTime(""); setCategoryId(""); setPrice(""); setDiscountPrice("");
+    setPrepTime(""); setCategoryId(""); setApplyPerBranch(true); setPrice(""); setDiscountPrice("");
     setFiles([]); setVideoFile(null); setRemoveVideo(false);
   };
 
@@ -79,7 +91,10 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, categories, onS
     put("enDescription", enDescription);
     put("ruDescription", ruDescription);
     put("prepTimeMinutes", prepTime);
-    if (categoryId) fd.append("menuCategoryId", categoryId);
+    if (categoryId) {
+      fd.append("menuCategoryId", categoryId);
+      if (applyPerBranch) fd.append("applyCategoryPerBranch", "true");
+    }
     // Qiymət yalnız bilərəkdən doldurulanda göndərilir
     if (price.trim() && Number.isFinite(parseFloat(price)))
       fd.append("price", parseFloat(price.replace(",", ".")).toFixed(2));
@@ -152,7 +167,7 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, categories, onS
                 <SelectValue placeholder="dəyişməsin" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
+                {dedupedCategories.map((cat) => (
                   <SelectItem key={cat.id} value={String(cat.id)}>
                     {cat.azName}
                   </SelectItem>
@@ -160,9 +175,21 @@ export function BulkEditItemsDialog({ open, onOpenChange, items, categories, onS
               </SelectContent>
             </Select>
             {categoryId && (
+              <label className="flex items-start gap-2 text-sm text-stone-600">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-4 accent-stone-900"
+                  checked={applyPerBranch}
+                  onChange={(e) => setApplyPerBranch(e.target.checked)}
+                />
+                <span>Hər filialda ad üzrə tətbiq et (yoxdursa yarat)</span>
+              </label>
+            )}
+            {categoryId && (
               <p className="text-xs text-amber-600">
-                Seçilmiş itemlər bu kateqoriyaya köçürüləcək. Filial-spesifik
-                kateqoriyaya yalnız həmin filialın itemləri köçür.
+                {applyPerBranch
+                  ? "Seçilmiş itemlər hər öz filialındakı eyni adlı kateqoriyaya köçürüləcək; o filialda yoxdursa yaradılacaq. İtemin filialı dəyişmir."
+                  : "Seçilmiş itemlər bu konkret kateqoriyaya köçürüləcək. Filial-spesifik kateqoriyaya yalnız həmin filialın itemləri köçür."}
               </p>
             )}
           </div>
