@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -231,6 +232,21 @@ export default function BranchAdminPage() {
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (branches.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-stone-900">Filial</h1>
+        <div className="rounded-lg border bg-white p-6 text-sm text-stone-600">
+          Bu restoranın filialı yoxdur. Menyu elanı və görünüş ayarlarını{" "}
+          <Link href="/admin/branding" className="font-medium text-stone-900 underline">
+            Branding
+          </Link>{" "}
+          səhifəsindən edə bilərsiniz.
+        </div>
       </div>
     );
   }
@@ -470,6 +486,9 @@ export default function BranchAdminPage() {
             Elan yazısının ölçüsü (10–40 px). Boş = standart.
           </p>
         </div>
+        <p className="text-xs text-stone-500">
+          Elan boş buraxılsa, Branding səhifəsindəki ümumi elan göstərilir.
+        </p>
       </section>
 
       {/* Menyu görünüşü */}

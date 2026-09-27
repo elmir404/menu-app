@@ -29,6 +29,10 @@ export interface Branding {
   defaultMenuView?: "grid" | "list" | null;
   categoryDescriptionColor?: string | null;
   categoryDescriptionFontSize?: number | null;
+  announcementAz?: string | null;
+  announcementEn?: string | null;
+  announcementRu?: string | null;
+  announcementFontSize?: number | null;
 }
 
 // ─── WiFi Info ───────────────────────────────────────────────────────────────

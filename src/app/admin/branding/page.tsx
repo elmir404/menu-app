@@ -34,6 +34,14 @@ const schema = z.object({
     .regex(/^\d+$/, "Rəqəm daxil edin")
     .optional()
     .or(z.literal("")),
+  announcementAz: z.string().optional(),
+  announcementEn: z.string().optional(),
+  announcementRu: z.string().optional(),
+  announcementFontSize: z
+    .string()
+    .regex(/^\d+$/, "Rəqəm daxil edin")
+    .optional()
+    .or(z.literal("")),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -81,6 +89,13 @@ export default function BrandingPage() {
         existingBranding.categoryDescriptionFontSize != null
           ? String(existingBranding.categoryDescriptionFontSize)
           : "",
+      announcementAz: existingBranding.announcementAz ?? "",
+      announcementEn: existingBranding.announcementEn ?? "",
+      announcementRu: existingBranding.announcementRu ?? "",
+      announcementFontSize:
+        existingBranding.announcementFontSize != null
+          ? String(existingBranding.announcementFontSize)
+          : "",
     });
   }, [existingBranding, reset]);
 
@@ -111,6 +126,12 @@ export default function BrandingPage() {
         formData.categoryDescriptionFontSize
       );
     }
+
+    fd.append("updateAnnouncement", "true");
+    fd.append("announcementAz", formData.announcementAz ?? "");
+    fd.append("announcementEn", formData.announcementEn ?? "");
+    fd.append("announcementRu", formData.announcementRu ?? "");
+    fd.append("announcementFontSize", formData.announcementFontSize || "0");
 
     if (logoFiles[0]) {
       fd.append("logoFile", logoFiles[0]);
@@ -277,6 +298,59 @@ export default function BrandingPage() {
                 səviyyəsində qoyulan stil bu ayarı üstələyir.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Elan (menyu səhifəsinin yuxarısında)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label>AZ</Label>
+                <Textarea
+                  {...register("announcementAz")}
+                  placeholder="məs. 10% servis haqqı"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>EN</Label>
+                <Textarea
+                  {...register("announcementEn")}
+                  placeholder="e.g. 10% service charge"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>RU</Label>
+                <Textarea
+                  {...register("announcementRu")}
+                  placeholder="например 10% сервисный сбор"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="space-y-2 sm:max-w-xs">
+              <Label>Elan şrift ölçüsü (px)</Label>
+              <Input
+                type="number"
+                min={10}
+                max={40}
+                {...register("announcementFontSize")}
+                placeholder="məs. 14"
+              />
+              {errors.announcementFontSize && (
+                <p className="text-xs text-red-600">
+                  {errors.announcementFontSize.message}
+                </p>
+              )}
+            </div>
+            <p className="text-xs text-stone-500">
+              Bütün menyu üçün ümumi elan (10–40 px, boş = standart). Filialın öz elanı varsa
+              həmin filialda o göstərilir.
+            </p>
           </CardContent>
         </Card>
 

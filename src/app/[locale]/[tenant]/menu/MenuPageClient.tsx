@@ -307,15 +307,21 @@ export default function MenuPageClient({
   const addBtnBg = pageFg;
   const addBtnFg = pageBg;
 
+  // Filialın öz elanı varsa o, yoxsa tenant (Branding) elanı — dil setləri qarışmasın
+  const announcementSource =
+    branchOverride?.announcementAz || branchOverride?.announcementEn || branchOverride?.announcementRu
+      ? branchOverride
+      : branding;
   // 3-dil announcement (locale fallback chain: cari → az → en → ru)
   const announcement =
-    (currentLocale === "az" && branchOverride?.announcementAz) ||
-    (currentLocale === "ru" && branchOverride?.announcementRu) ||
-    (currentLocale === "en" && branchOverride?.announcementEn) ||
-    branchOverride?.announcementAz ||
-    branchOverride?.announcementEn ||
-    branchOverride?.announcementRu ||
+    (currentLocale === "az" && announcementSource?.announcementAz) ||
+    (currentLocale === "ru" && announcementSource?.announcementRu) ||
+    (currentLocale === "en" && announcementSource?.announcementEn) ||
+    announcementSource?.announcementAz ||
+    announcementSource?.announcementEn ||
+    announcementSource?.announcementRu ||
     null;
+  const announcementFontSize = announcementSource?.announcementFontSize;
 
   // Branch sosial linkləri header altında kompakt icon row
   const branchSocialUrls: Array<{ url: string; label: string }> = branchOverride
@@ -372,9 +378,9 @@ export default function MenuPageClient({
               backgroundColor: pageFg,
               color: pageBg,
               borderColor: pageFg,
-              ...(branchOverride?.announcementFontSize
+              ...(announcementFontSize
                 ? {
-                    fontSize: `${branchOverride.announcementFontSize}px`,
+                    fontSize: `${announcementFontSize}px`,
                     lineHeight: 1.4,
                   }
                 : {}),
