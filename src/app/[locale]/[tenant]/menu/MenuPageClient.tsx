@@ -576,7 +576,7 @@ export default function MenuPageClient({
 
                   const imageClassName =
                     viewMode === "grid"
-                      ? "h-28 w-full rounded-xl object-cover"
+                      ? "aspect-square w-full rounded-xl object-cover"
                       : "h-16 w-16 flex-shrink-0 rounded-xl object-cover";
 
                   const cardBody = (
