@@ -9,6 +9,8 @@ import type { PublicMenuPopup } from "@/types/api";
 interface CampaignPopupProps {
   tenantSlug: string;
   locale: string;
+  /** Filial menyusu (/b/{slug}/menu) — backend həmin filiala aid popup-u seçir; null = ümumi menyu */
+  branchSlug?: string | null;
 }
 
 function pickLocalized(
@@ -31,13 +33,14 @@ function pickLocalized(
  * Tam dinamik: yalnız-şəkil rejimi, mətnli rejim, opsional CTA (loyallıq keçidi).
  * Sessiyada bir dəfə göstərilir.
  */
-export default function CampaignPopup({ tenantSlug, locale }: CampaignPopupProps) {
+export default function CampaignPopup({ tenantSlug, locale, branchSlug }: CampaignPopupProps) {
   const dict = useDictionary();
   const [popup, setPopup] = useState<PublicMenuPopup | null>(null);
   const [open, setOpen] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-  const shownKey = `menu-popup-shown:${tenantSlug}`;
+  // Filial üzrə ayrıca — bir filialın popup-u digər filialınkını gizlətməsin
+  const shownKey = `menu-popup-shown:${tenantSlug}${branchSlug ? `:${branchSlug}` : ""}`;
 
   useEffect(() => {
     if (!tenantSlug) return;
@@ -50,7 +53,8 @@ export default function CampaignPopup({ tenantSlug, locale }: CampaignPopupProps
     let cancelled = false;
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/public/menu-popup/${tenantSlug}`);
+        const query = branchSlug ? `?branch=${encodeURIComponent(branchSlug)}` : "";
+        const res = await fetch(`${API_BASE}/api/public/menu-popup/${tenantSlug}${query}`);
         if (!res.ok) return;
         const json = (await res.json()) as { success?: boolean; data?: PublicMenuPopup | null };
         if (cancelled || !json?.success || !json.data) return;
@@ -75,7 +79,7 @@ export default function CampaignPopup({ tenantSlug, locale }: CampaignPopupProps
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantSlug]);
+  }, [tenantSlug, branchSlug]);
 
   if (!popup) return null;
 

@@ -754,7 +754,7 @@ export default function MenuPageClient({
         }}
       />
 
-      <CampaignPopup tenantSlug={tenantSlug} locale={currentLocale} />
+      <CampaignPopup tenantSlug={tenantSlug} locale={currentLocale} branchSlug={branchSlug} />
 
     </div>
   );
