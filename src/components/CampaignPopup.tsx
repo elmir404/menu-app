@@ -199,7 +199,6 @@ function PopupSlide({ popup, locale, active }: { popup: PublicMenuPopup; locale:
   const description = pickLocalized(locale, popup.azDescription, popup.enDescription, popup.ruDescription);
   const ctaText =
     pickLocalized(locale, popup.azCtaText, popup.enCtaText, popup.ruCtaText) || dict.campaign.goToLoyalty;
-  const imageOnly = !!popup.imageUrl && !title && !description;
 
   return (
     <div className="flex w-full shrink-0 flex-col" aria-hidden={!active}>
@@ -208,7 +207,7 @@ function PopupSlide({ popup, locale, active }: { popup: PublicMenuPopup; locale:
         <img
           src={popup.imageUrl}
           alt={title || ""}
-          className={imageOnly ? "max-h-[70vh] w-full object-cover" : "max-h-[40vh] w-full object-cover"}
+          className="aspect-square w-full object-cover"
         />
       )}
 
